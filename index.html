@@ -651,8 +651,13 @@ function connect() {
 }
 
 function handleMsg(msg) {
+    // DEBUG — log every message so we can see what Streamer.bot sends
+    const msgStr = JSON.stringify(msg);
+    if (msgStr.includes('DSR') || msgStr.includes('Custom') || msgStr.includes('fleet')) {
+        log('DBG: ' + msgStr.substring(0, 120), '');
+    }
+
     // Handle BroadcastCustomEvent DSR_STATE from overlay
-    // Streamer.bot wraps it as: { event: { source:'Custom', type:'Event' }, data: { args: { eventName, fleet, ... } } }
     const isCustomEvent = msg.event && msg.event.source === 'Custom' && msg.event.type === 'Event';
     if (isCustomEvent && msg.data && msg.data.args && msg.data.args.eventName === 'DSR_STATE') {
         const state = msg.data.args;

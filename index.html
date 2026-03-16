@@ -651,18 +651,15 @@ function connect() {
 }
 
 function handleMsg(msg) {
-    // Handle DSR_STATE broadcast from Streamer.bot C# timed action
-    if (msg.event && msg.event.source === 'General' && msg.event.type === 'Custom') {
-        const args = (msg.data && msg.data.data) || (msg.data && msg.data.args) || null;
-        if (args && args.type === 'DSR_STATE' && args.stateJson) {
-            try {
-                const state = JSON.parse(args.stateJson);
-                if (state.fleet) { fleet = state.fleet; renderFleet(); }
-                borgActive = state.borgActive || false;
-                borgHp     = state.borgHp    || 0;
-                updateBossAlert();
-            } catch(e) { log('Parse err: ' + e.message, 'err'); }
-        }
+    // Handle DSR_STATE from WebsocketBroadcastJson — arrives as raw message
+    if (msg.type === 'DSR_STATE' && msg.stateJson) {
+        try {
+            const state = typeof msg.stateJson === 'string' ? JSON.parse(msg.stateJson) : msg.stateJson;
+            if (state.fleet) { fleet = state.fleet; renderFleet(); }
+            borgActive = state.borgActive || false;
+            borgHp     = state.borgHp    || 0;
+            updateBossAlert();
+        } catch(e) { log('Parse err: ' + e.message, 'err'); }
         return;
     }
 

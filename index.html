@@ -691,7 +691,7 @@ function pollState() {
     ws.send(JSON.stringify({
         request: 'GetGlobalVar',
         id:      'poll-dsr-state',
-        variable: 'dsr_state'
+        name:    'dsr_state'
     }));
 }
 setInterval(pollState, 2000);

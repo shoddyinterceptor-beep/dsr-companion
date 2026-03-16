@@ -69,6 +69,23 @@ body::after {
   padding-bottom: 40px;
 }
 
+/* ── Twitch login button ── */
+#twitch-login-btn {
+  width: 100%;
+  background: #9146ff;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+#twitch-login-btn:hover { background: #7c2ff0; box-shadow: 0 0 16px #9146ff88; }
+
 /* ── Connection panel ── */
 #connect-panel input {
   width: 100%;
@@ -431,7 +448,23 @@ header p {
   <!-- Identity -->
   <div class="panel" id="identity-section">
     <div class="panel-title">▸ COMMANDER IDENTIFICATION</div>
-    <input type="text" id="username-input" placeholder="Enter your Twitch username..." autocomplete="off" spellcheck="false">
+    <div id="login-area">
+      <button id="twitch-login-btn" onclick="twitchLogin()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="vertical-align:middle;margin-right:8px"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+        LOGIN WITH TWITCH
+      </button>
+      <div style="font-size:10px;color:var(--dim);margin-top:8px;text-align:center">Your identity is verified by Twitch — no spoofing possible</div>
+    </div>
+    <div id="logged-in-area" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px">
+        <img id="twitch-avatar" src="" width="36" height="36" style="border-radius:50%;border:2px solid var(--cyan)">
+        <div>
+          <div style="font-family:'Orbitron',monospace;font-size:13px;color:var(--cyan)" id="twitch-display-name">—</div>
+          <div style="font-size:10px;color:var(--dim)">VERIFIED COMMANDER</div>
+        </div>
+        <button onclick="twitchLogout()" style="margin-left:auto;background:none;border:1px solid var(--dim);color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;cursor:pointer;border-radius:3px">LOGOUT</button>
+      </div>
+    </div>
   </div>
 
   <!-- My ship status -->
@@ -764,13 +797,85 @@ function updateBossAlert() {
 }
 
 // ── Username input ─────────────────────────────────────────────────────────
-document.getElementById('username-input').addEventListener('input', e => {
-    myName = e.target.value.trim();
+// ── Twitch OAuth ──────────────────────────────────────────────────────────
+const TWITCH_CLIENT_ID   = 'yjnejxr98o87fzmsd09qk0xoqd0i0f';
+const TWITCH_REDIRECT    = 'https://shoddyinterceptor-beep.github.io/dsr-companion/';
+const TWITCH_SCOPE       = 'user:read:email';
+
+function twitchLogin() {
+    const state = Math.random().toString(36).substring(2);
+    sessionStorage.setItem('twitch_state', state);
+    const url = `https://id.twitch.tv/oauth2/authorize` +
+        `?client_id=${TWITCH_CLIENT_ID}` +
+        `&redirect_uri=${encodeURIComponent(TWITCH_REDIRECT)}` +
+        `&response_type=token` +
+        `&scope=${TWITCH_SCOPE}` +
+        `&state=${state}`;
+    window.location.href = url;
+}
+
+function twitchLogout() {
+    sessionStorage.removeItem('twitch_token');
+    sessionStorage.removeItem('twitch_user');
+    myName = '';
+    document.getElementById('login-area').style.display = 'block';
+    document.getElementById('logged-in-area').style.display = 'none';
+    document.getElementById('my-ship').style.display = 'none';
+    log('Logged out', '');
+}
+
+async function handleOAuthCallback() {
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const token  = params.get('access_token');
+    const state  = params.get('state');
+
+    if (!token) return;
+
+    // Validate state
+    if (state !== sessionStorage.getItem('twitch_state')) {
+        log('OAuth state mismatch — possible attack!', 'err');
+        return;
+    }
+
+    // Clean URL
+    history.replaceState(null, '', window.location.pathname);
+
+    // Fetch user info from Twitch
+    try {
+        const res  = await fetch('https://api.twitch.tv/helix/users', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Client-Id': TWITCH_CLIENT_ID
+            }
+        });
+        const data = await res.json();
+        const user = data.data[0];
+
+        sessionStorage.setItem('twitch_token', token);
+        sessionStorage.setItem('twitch_user', JSON.stringify(user));
+        setTwitchUser(user);
+        log(`Verified as ${user.display_name}`, 'ok');
+    } catch(e) {
+        log('Failed to verify Twitch identity', 'err');
+    }
+}
+
+function setTwitchUser(user) {
+    myName = user.display_name;
+    document.getElementById('login-area').style.display = 'none';
+    document.getElementById('logged-in-area').style.display = 'block';
+    document.getElementById('twitch-display-name').innerText = user.display_name;
+    document.getElementById('twitch-avatar').src = user.profile_image_url;
     updateMyShip();
-});
-document.getElementById('username-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.target.blur(); log(`Commander: ${myName}`, 'ok'); }
-});
+}
+
+function checkExistingSession() {
+    const stored = sessionStorage.getItem('twitch_user');
+    if (stored) {
+        try { setTwitchUser(JSON.parse(stored)); } catch(_) {}
+    }
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function setStatus(online, text) {
@@ -808,8 +913,9 @@ setInterval(() => {
 }, 30000);
 
 // ── Start ──────────────────────────────────────────────────────────────────
-// Don't auto-connect — viewer must paste the URL first
-log('Paste the streamer connection URL above to get started', '');
+handleOAuthCallback(); // handle Twitch redirect if returning from login
+checkExistingSession(); // restore session if already logged in
+log('Login with Twitch, then paste the streamer connection URL', '');
 </script>
 </body>
 </html>

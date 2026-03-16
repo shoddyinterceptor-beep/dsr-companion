@@ -530,6 +530,11 @@ header p {
         <span class="btn-cd">your cooldown</span>
         <div class="cd-overlay" id="cd-cloak">—</div>
       </button>
+      <button class="ability-btn safe" id="btn-respawn" onclick="sendRespawn()" style="grid-column:span 2">
+        <span class="btn-icon">🔄</span>
+        <span class="btn-label">RESPAWN</span>
+        <span class="btn-cd">spawns your ship in the arena</span>
+      </button>
     </div>
   </div>
 
@@ -656,21 +661,46 @@ function handleMsg(msg) {
     }
 }
 
-function sendCommand(commandType, input0) {
-    if (!myName) { log('Set your username first!', 'err'); return false; }
-    if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected!', 'err'); return false; }
+// Maps command type to exact Streamer.bot action name
+const ACTION_NAMES = {
+    'FIRE':   'concentrateFire',
+    'FAW':    'FAW',
+    'TORP':   'TorpSingleTarget',
+    'SPREAD': 'spreadTorpedo',
+    'HEAL':   'Heal_DSR',
+    'CLOAK':  'CloakDSR',
+    'RAM':    'Ram DSR',
+    'SHIP':   'DSR Ship',
+    'BORG':   'DSR Spawn Borg',
+};
 
-    const payload = input0
-        ? `${commandType}:${myName}:${input0}`
-        : `${commandType}:${myName}`;
+function sendCommand(commandType, input0) {
+    if (!myName) { log('Login with Twitch first!', 'err'); return false; }
+    if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected to stream!', 'err'); return false; }
+
+    const actionName = ACTION_NAMES[commandType.toUpperCase()];
+    if (!actionName) { log('Unknown command: ' + commandType, 'err'); return false; }
 
     ws.send(JSON.stringify({
         request: 'DoAction',
         id: 'companion-cmd',
-        action: { name: 'DSR Commands' },
-        args: { commandType: commandType, userName: myName, input0: input0 || '' }
+        action: { name: actionName },
+        args: { userName: myName, input0: input0 || '' }
     }));
     return true;
+}
+
+function sendRespawn() {
+    if (!myName) { log('Login with Twitch first!', 'err'); return; }
+    if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected!', 'err'); return; }
+    // Send via DSR Respawn action which posts a chat message as the viewer
+    ws.send(JSON.stringify({
+        request: 'DoAction',
+        id: 'companion-respawn',
+        action: { name: 'DSR Respawn' },
+        args: { userName: myName }
+    }));
+    log('Respawn requested!', 'ok');
 }
 
 // ── Ability handlers ───────────────────────────────────────────────────────

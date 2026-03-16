@@ -651,14 +651,18 @@ function connect() {
 }
 
 function handleMsg(msg) {
-    // Live DSR_STATE from overlay — most accurate source, use it preferentially
-    if (msg.type === 'DSR_STATE') {
-        if (msg.fleet) {
-            fleet = msg.fleet;
+    // BroadcastCustomEvent wrapper from Streamer.bot
+    const inner = (msg.data && msg.data.type === 'DSR_STATE') ? msg.data
+                : (msg.type === 'DSR_STATE')                  ? msg
+                : null;
+
+    if (inner) {
+        if (inner.fleet) {
+            fleet = inner.fleet;
             renderFleet();
         }
-        borgActive = msg.borgActive || false;
-        borgHp     = msg.borgHp    || 0;
+        borgActive = inner.borgActive || false;
+        borgHp     = inner.borgHp    || 0;
         updateBossAlert();
         return;
     }

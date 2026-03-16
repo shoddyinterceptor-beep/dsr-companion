@@ -651,6 +651,17 @@ function connect() {
 }
 
 function handleMsg(msg) {
+    // Handle DSR_STATE relayed via BroadcastCustomEvent from overlay
+    if (msg.event && msg.event.source === 'General' && msg.event.type === 'Custom') {
+        const d = (msg.data && msg.data.data) || (msg.data && msg.data.args) || null;
+        if (d && d.type === 'DSR_STATE' && d.state) {
+            if (d.state.fleet) { fleet = d.state.fleet; renderFleet(); }
+            borgActive = d.state.borgActive || false;
+            borgHp     = d.state.borgHp    || 0;
+            updateBossAlert();
+        }
+        return;
+    }
     // Handle Custom.CodeEvent DSRState from C# TriggerCodeEvent
     if (msg.event && msg.event.source === 'Custom' && msg.event.type === 'CodeEvent') {
         log('CODE: ' + JSON.stringify(msg).substring(0, 200), '');
@@ -960,6 +971,18 @@ setInterval(() => {
         ws.send(JSON.stringify({ request:'GetActiveViewers', id:'refresh' }));
     }
 }, 30000);
+
+// ── Request DSR state every 2 seconds via DoAction ────────────────────────
+setInterval(() => {
+    if (ws && ws.readyState === WebSocket.OPEN && myName) {
+        ws.send(JSON.stringify({
+            request: 'DoAction',
+            id:      'state-request',
+            action:  { name: 'DSR Get State' },
+            args:    {}
+        }));
+    }
+}, 2000);
 
 
 

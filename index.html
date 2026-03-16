@@ -674,10 +674,13 @@ function handleMsg(msg) {
     if (msg.event && msg.event.source === 'General' && msg.event.type === 'Custom') {
         try {
             const raw = msg.data && msg.data.data;
+            log('RAW type: ' + typeof raw + ' val: ' + String(raw).substring(0, 80), '');
             if (!raw) return;
             const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+            log('PARSED type: ' + parsed.type + ' hasState: ' + !!parsed.stateJson, '');
             if (parsed.type === 'DSR_STATE' && parsed.stateJson) {
                 const state = typeof parsed.stateJson === 'string' ? JSON.parse(parsed.stateJson) : parsed.stateJson;
+                log('STATE fleet keys: ' + Object.keys(state.fleet||{}).join(','), 'ok');
                 if (state.fleet) { fleet = state.fleet; renderFleet(); }
                 borgActive = state.borgActive || false;
                 borgHp     = state.borgHp    || 0;

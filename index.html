@@ -631,7 +631,7 @@ function connect() {
 
     ws.onopen = () => {
         setStatus(true, 'ONLINE — STREAMER.BOT CONNECTED');
-        ws.send(JSON.stringify({ request:'Subscribe', id:'companion-sub', events:{ Twitch:['ChatMessage'], General:['Custom'] } }));
+        ws.send(JSON.stringify({ request:'Subscribe', id:'companion-sub', events:{ Twitch:['ChatMessage'], General:['Custom'], Custom:['CodeEvent'] } }));
         ['GetActiveViewers','GetViewers','GetUsers'].forEach((r,i) =>
             setTimeout(() => ws.send(JSON.stringify({request:r,id:r})), i*300)
         );
@@ -651,22 +651,17 @@ function connect() {
 }
 
 function handleMsg(msg) {
-    // Handle GetGlobalVar response for dsr_state_out
-    if (msg.id === 'poll-dsr-state') {
-        // DEBUG — log full response so we can see the field name
-        log('POLL: ' + JSON.stringify(msg).substring(0, 200), '');
-        // Try every possible field name Streamer.bot might use
-        const raw = msg.value ?? msg.data ?? msg.variable ?? msg.result ?? null;
-        if (raw) {
+    // Handle Custom.CodeEvent DSRState from C# TriggerCodeEvent
+    if (msg.event && msg.event.source === 'Custom' && msg.event.type === 'CodeEvent') {
+        log('CODE: ' + JSON.stringify(msg).substring(0, 200), '');
+        const args = msg.data && msg.data.args;
+        if (args && args.stateJson) {
             try {
-                const state = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                if (state && state.fleet) {
-                    fleet = state.fleet;
-                    renderFleet();
-                    borgActive = state.borgActive || false;
-                    borgHp     = state.borgHp    || 0;
-                    updateBossAlert();
-                }
+                const state = JSON.parse(args.stateJson);
+                if (state.fleet) { fleet = state.fleet; renderFleet(); }
+                borgActive = state.borgActive || false;
+                borgHp     = state.borgHp    || 0;
+                updateBossAlert();
             } catch(e) { log('Parse err: ' + e.message, 'err'); }
         }
         return;
@@ -966,16 +961,7 @@ setInterval(() => {
     }
 }, 30000);
 
-// ── Poll DSR state every 2 seconds ────────────────────────────────────────
-setInterval(() => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-            request: 'GetGlobalVar',
-            id:      'poll-dsr-state',
-            name:    'dsr_state_out'
-        }));
-    }
-}, 2000);
+
 
 // ── Start ──────────────────────────────────────────────────────────────────
 handleOAuthCallback(); // handle Twitch redirect if returning from login

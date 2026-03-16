@@ -991,17 +991,7 @@ setInterval(() => {
     }
 }, 30000);
 
-// ── Request DSR state every 2 seconds via DoAction ────────────────────────
-setInterval(() => {
-    if (ws && ws.readyState === WebSocket.OPEN && myName) {
-        ws.send(JSON.stringify({
-            request: 'DoAction',
-            id:      'state-request',
-            action:  { name: 'DSR Get State' },
-            args:    {}
-        }));
-    }
-}, 2000);
+// State pushed via WebsocketBroadcastString from DSR Store State action
 
 
 

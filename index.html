@@ -651,20 +651,22 @@ function connect() {
 }
 
 function handleMsg(msg) {
-    // DEBUG — log every message so we can see what Streamer.bot sends
+    // DEBUG — log ALL messages briefly so we can see everything
     const msgStr = JSON.stringify(msg);
-    if (msgStr.includes('DSR') || msgStr.includes('Custom') || msgStr.includes('fleet')) {
+    if (!msgStr.includes('poll-dsr-state') && !msgStr.includes('companion-sub') && !msgStr.includes('refresh')) {
         log('DBG: ' + msgStr.substring(0, 120), '');
     }
 
-    // Handle BroadcastCustomEvent DSR_STATE from overlay
-    const isCustomEvent = msg.event && msg.event.source === 'Custom' && msg.event.type === 'Event';
-    if (isCustomEvent && msg.data && msg.data.args && msg.data.args.eventName === 'DSR_STATE') {
-        const state = msg.data.args;
-        if (state.fleet) { fleet = state.fleet; renderFleet(); }
-        borgActive = state.borgActive || false;
-        borgHp     = state.borgHp    || 0;
-        updateBossAlert();
+    // Handle BroadcastCustomEvent DSR_STATE — try all known formats
+    const args = (msg.data && msg.data.args) || null;
+    if (args && args.type === 'DSR_STATE') {
+        try {
+            const fleetData = typeof args.fleet === 'string' ? JSON.parse(args.fleet) : args.fleet;
+            if (fleetData) { fleet = fleetData; renderFleet(); }
+            borgActive = args.borgActive || false;
+            borgHp     = args.borgHp    || 0;
+            updateBossAlert();
+        } catch(e) { log('Parse err: ' + e.message, 'err'); }
         return;
     }
 

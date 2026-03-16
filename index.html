@@ -7,20 +7,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:        #020810;
-  --panel:     #060f1e;
-  --border:    #0a2440;
-  --cyan:      #00d4ff;
-  --green:     #00ff88;
-  --orange:    #ff8800;
-  --red:       #ff2244;
-  --gold:      #ffcc00;
-  --dim:       #1a3a5c;
-  --text:      #a0c4d8;
-  --glow-c:    0 0 12px #00d4ff88;
-  --glow-g:    0 0 12px #00ff8888;
-  --glow-o:    0 0 12px #ff880088;
-  --glow-r:    0 0 12px #ff224488;
+  --bg:       #020810;
+  --panel:    #060f1e;
+  --border:   #0a2440;
+  --cyan:     #00d4ff;
+  --green:    #00ff88;
+  --orange:   #ff8800;
+  --red:      #ff2244;
+  --gold:     #ffcc00;
+  --dim:      #1a3a5c;
+  --text:     #a0c4d8;
+  --glow-c:   0 0 12px #00d4ff88;
+  --glow-g:   0 0 12px #00ff8888;
+  --glow-o:   0 0 12px #ff880088;
+  --glow-r:   0 0 12px #ff224488;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -261,7 +261,7 @@ header p {
 }
 .ability-btn.danger  { --accent: var(--red);    }
 .ability-btn.warn    { --accent: var(--orange);  }
-.ability-btn.safe    { --accent: var(--green);    }
+.ability-btn.safe    { --accent: var(--green);   }
 .ability-btn.special { --accent: var(--gold);    }
 .ability-btn.info    { --accent: var(--cyan);    }
 
@@ -389,6 +389,31 @@ header p {
 #log .entry.ok { color: var(--green); }
 #log .entry.err { color: var(--red); }
 
+/* ── Boss action buttons ── */
+.boss-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+.boss-btn {
+  background: rgba(0,20,0,0.8);
+  border: 1px solid var(--green);
+  border-radius: 3px;
+  color: var(--green);
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 8px 4px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.boss-btn:hover { background: var(--green); color: var(--bg); box-shadow: var(--glow-g); }
+.boss-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.boss-btn .bb-icon { font-size: 16px; display: block; margin-bottom: 3px; }
+
 /* ── Boss alert ── */
 #boss-alert {
   display: none;
@@ -420,7 +445,6 @@ header p {
   transition: width 0.5s;
 }
 #boss-alert .boss-hp-text { font-size: 10px; color: var(--green); }
-
 /* Boss specific buttons */
 .boss-actions {
   display: grid;
@@ -442,7 +466,6 @@ header p {
 }
 .boss-btn:hover { background: var(--green); color: black; }
 .boss-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
 </style>
 </head>
 <body>
@@ -458,6 +481,7 @@ header p {
     <span id="conn-text">CONNECTING TO STREAMER.BOT...</span>
   </div>
 
+  <!-- Connection -->
   <div class="panel" id="connect-panel">
     <div class="panel-title">▸ STREAMER CONNECTION</div>
     <div class="connect-row">
@@ -467,6 +491,7 @@ header p {
     <div style="font-size:10px;color:var(--dim);margin-top:8px">Ask your streamer for today's connection URL in chat or Discord.</div>
   </div>
 
+  <!-- Identity -->
   <div class="panel" id="identity-section">
     <div class="panel-title">▸ COMMANDER IDENTIFICATION</div>
     <div id="login-area">
@@ -488,6 +513,7 @@ header p {
     </div>
   </div>
 
+  <!-- My ship status -->
   <div class="panel" id="my-ship">
     <div class="panel-title">▸ YOUR VESSEL</div>
     <div class="my-ship-name" id="my-ship-name">—</div>
@@ -498,18 +524,25 @@ header p {
     </div>
   </div>
 
+  <!-- Boss alert -->
   <div id="boss-alert">
     <div class="boss-title">⚠ BORG CUBE ACTIVE</div>
     <div class="boss-hp-wrap"><div class="boss-hp-fill" id="boss-hp-bar" style="width:100%"></div></div>
     <div class="boss-hp-text" id="boss-hp-text">1,000,000 HP</div>
-    
     <div class="boss-actions">
-        <button class="boss-btn" id="boss-fire" onclick="useBossTarget('fire')">LOCK-ON CUBE</button>
-        <button class="boss-btn" id="boss-torp" onclick="useBossTarget('torp')">TORP CUBE</button>
-        <button class="boss-btn" id="boss-ram" onclick="useBossTarget('ram')">RAM CUBE</button>
+      <button class="boss-btn" id="btn-boss-ram" onclick="useBossAbility('ram')">
+        <span class="bb-icon">⚡</span>RAM CUBE
+      </button>
+      <button class="boss-btn" id="btn-boss-torp" onclick="useBossAbility('torp')">
+        <span class="bb-icon">🚀</span>TORP CUBE
+      </button>
+      <button class="boss-btn" id="btn-boss-fire" onclick="useBossAbility('fire')">
+        <span class="bb-icon">🎯</span>LOCK-ON CUBE
+      </button>
     </div>
   </div>
 
+  <!-- Targeted abilities -->
   <div class="panel">
     <div class="panel-title">▸ TARGETED WEAPONS</div>
     <div class="target-row">
@@ -526,6 +559,7 @@ header p {
     </div>
   </div>
 
+  <!-- Untargeted abilities -->
   <div class="panel">
     <div class="panel-title">▸ SHIP SYSTEMS</div>
     <div class="ability-grid">
@@ -561,6 +595,7 @@ header p {
     </div>
   </div>
 
+  <!-- Ship selector -->
   <div class="panel">
     <div class="panel-title">▸ VESSEL SELECTION</div>
     <div class="ship-choices">
@@ -582,11 +617,13 @@ header p {
     </div>
   </div>
 
+  <!-- Fleet roster -->
   <div class="panel">
     <div class="panel-title">▸ ACTIVE FLEET <span id="fleet-count" style="color:var(--dim)">(0)</span></div>
     <div id="fleet-list"><div style="color:var(--dim);font-size:11px">No ships in arena</div></div>
   </div>
 
+  <!-- Log -->
   <div class="panel">
     <div class="panel-title">▸ COMMAND LOG</div>
     <div id="log"></div>
@@ -596,50 +633,43 @@ header p {
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
-// COOLDOWN SETTINGS
+// COOLDOWN SETTINGS — edit these to match your Streamer.bot cooldowns
+// Change the number (in seconds) whenever you update Streamer.bot
 // ═══════════════════════════════════════════════════════════════════
 const COOLDOWNS_SECONDS = {
-    fire:   60,   
-    faw:    45,   
-    torp:   90,   
-    spread: 100,  
-    heal:   45,   
-    cloak:  180,  
-    ram:    120,  
+    fire:   60,   // !fire   — concentrateFire action
+    faw:    45,   // !faw    — FAW action
+    torp:   90,   // !torp   — TorpSingleTarget action
+    spread: 100,  // !spread — spreadTorpedo action
+    heal:   45,   // !heal   — Heal_DSR action
+    cloak:  180,  // !cloak  — CloakDSR action
+    ram:    120,  // !ram    — Ram DSR action
 };
+// ═══════════════════════════════════════════════════════════════════
+// Auto-converts seconds to milliseconds — do not edit below this line
 const CD = Object.fromEntries(
     Object.entries(COOLDOWNS_SECONDS).map(([k, v]) => [k, v * 1000])
 );
+// ═══════════════════════════════════════════════════════════════════
+
+// ── CONFIG — WS_HOST is set by viewer via the connection panel ────────────
+let WS_HOST = '';
 
 // ── State ──────────────────────────────────────────────────────────────────
-let WS_HOST = '';
 let ws        = null;
 let myName    = '';
-let fleet     = {}; 
+let fleet     = {}; // name -> {hp, maxHp, killStreak, isCloaked}
 let borgHp    = 0;
 let borgActive = false;
-const cooldowns = {}; 
+const cooldowns = {}; // abilityKey -> expiry timestamp
 
-// ── WebSocket Logic ────────────────────────────────────────────────────────
-function setStatus(online, text) {
-    const dot = document.getElementById('dot');
-    const span = document.getElementById('conn-text');
-    if (dot) dot.className = online ? 'dot online' : 'dot';
-    if (span) span.innerText = text;
-}
 
-function log(msg, type) {
-    const l = document.getElementById('log');
-    if (!l) return;
-    const div = document.createElement('div');
-    div.className = 'entry ' + (type||'');
-    div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-    l.prepend(div);
-}
 
+// ── WebSocket ──────────────────────────────────────────────────────────────
 function connectToHost() {
     const raw = document.getElementById('ws-url-input').value.trim();
     if (!raw) { log('Paste the streamer URL first!', 'err'); return; }
+    // Convert https:// to wss:// for WebSocket
     WS_HOST = raw.replace(/^https?:\/\//, 'wss://').replace(/\/$/, '');
     if (ws) { try { ws.close(); } catch(_){} }
     connect();
@@ -678,17 +708,20 @@ function connect() {
 }
 
 function handleMsg(msg) {
+    // Handle raw WebsocketBroadcastString from C#
     if (msg.type === 'DSR_STATE' && msg.stateJson) {
         try {
             const state = typeof msg.stateJson === 'string' ? JSON.parse(msg.stateJson) : msg.stateJson;
             if (state.fleet) { fleet = state.fleet; renderFleet(); }
             borgActive = state.borgActive || false;
-            borgHp     = state.borgHp     || 0;
+            borgHp     = state.borgHp    || 0;
             updateBossAlert();
+            log('Fleet OK: ' + Object.keys(state.fleet||{}).length + ' ships', 'ok');
         } catch(e) { log('Parse err: ' + e.message, 'err'); }
         return;
     }
 
+    // Handle General.Custom — data arrives as msg.data.data (JSON string)
     if (msg.event && msg.event.source === 'General' && msg.event.type === 'Custom') {
         try {
             const raw = msg.data && msg.data.data;
@@ -698,28 +731,42 @@ function handleMsg(msg) {
                 const state = typeof parsed.stateJson === 'string' ? JSON.parse(parsed.stateJson) : parsed.stateJson;
                 if (state.fleet) { fleet = state.fleet; renderFleet(); }
                 borgActive = state.borgActive || false;
-                borgHp     = state.borgHp     || 0;
+                borgHp     = state.borgHp    || 0;
                 updateBossAlert();
             }
         } catch(e) {}
         return;
     }
-
+    // Handle Custom.CodeEvent DSRState from C# TriggerCodeEvent
     if (msg.event && msg.event.source === 'Custom' && msg.event.type === 'CodeEvent') {
+        log('CODE: ' + JSON.stringify(msg).substring(0, 200), '');
         const args = msg.data && msg.data.args;
         if (args && args.stateJson) {
             try {
                 const state = JSON.parse(args.stateJson);
                 if (state.fleet) { fleet = state.fleet; renderFleet(); }
                 borgActive = state.borgActive || false;
-                borgHp     = state.borgHp     || 0;
+                borgHp     = state.borgHp    || 0;
                 updateBossAlert();
             } catch(e) { log('Parse err: ' + e.message, 'err'); }
         }
         return;
     }
+
+    // Bulk user list fallback
+    const users = findUsers(msg);
+    if (users) {
+        users.forEach(u => {
+            const n = extractName(u);
+            if (n && !fleet[n]) fleet[n] = { hp: 250, maxHp: 250, killStreak: 0, isCloaked: false, isRamming: false };
+        });
+        renderFleet();
+    }
 }
 
+
+
+// Maps command type to exact Streamer.bot action name
 const ACTION_NAMES = {
     'FIRE':   'concentrateFire',
     'FAW':    'FAW',
@@ -729,13 +776,15 @@ const ACTION_NAMES = {
     'CLOAK':  'CloakDSR',
     'RAM':    'Ram DSR',
     'SHIP':   'DSR Ship',
+    'BORG':   'DSR Spawn Borg',
 };
 
 function sendCommand(commandType, input0) {
     if (!myName) { log('Login with Twitch first!', 'err'); return false; }
-    if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected!', 'err'); return false; }
+    if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected to stream!', 'err'); return false; }
+
     const actionName = ACTION_NAMES[commandType.toUpperCase()];
-    if (!actionName) return false;
+    if (!actionName) { log('Unknown command: ' + commandType, 'err'); return false; }
 
     ws.send(JSON.stringify({
         request: 'DoAction',
@@ -749,18 +798,30 @@ function sendCommand(commandType, input0) {
 function sendRespawn() {
     if (!myName) { log('Login with Twitch first!', 'err'); return; }
     if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected!', 'err'); return; }
+    // Send via DSR Respawn action which posts a chat message as the viewer
     ws.send(JSON.stringify({
         request: 'DoAction',
         id: 'companion-respawn',
         action: { name: 'DSR Respawn' },
         args: { userName: myName }
     }));
+    log('Respawn requested!', 'ok');
 }
 
+// ── Ability handlers ───────────────────────────────────────────────────────
 function useAbility(key) {
     if (isOnCooldown(key)) return;
     if (!sendCommand(key.toUpperCase())) return;
     startCooldown(key);
+    log(`${key.toUpperCase()} activated`, 'ok');
+}
+
+function useBossAbility(key) {
+    if (isOnCooldown(key)) return;
+    // Pass 'BORG CUBE' as target — overlay handles routing to Borg
+    if (!sendCommand(key.toUpperCase(), 'BORG CUBE')) return;
+    startCooldown(key);
+    log(`${key.toUpperCase()} → BORG CUBE`, 'ok');
 }
 
 function useTargeted(key) {
@@ -770,23 +831,28 @@ function useTargeted(key) {
     if (isOnCooldown(key)) return;
     if (!sendCommand(key.toUpperCase(), target)) return;
     startCooldown(key);
+    log(`${key.toUpperCase()} → ${target}`, 'ok');
 }
 
-/* FIX: Specific handler for Boss Buttons */
+// Boss mode buttons — overlay auto-routes to Borg during boss mode
 function useBossTarget(key) {
-    const target = "BORG CUBE"; // Hardcoded target
     if (isOnCooldown(key)) return;
-    if (!sendCommand(key.toUpperCase(), target)) return;
+    // ram needs no target, fire/torp use own name as dummy (overlay ignores and hits Borg)
+    const input0 = (key === 'ram') ? '' : myName;
+    if (!sendCommand(key.toUpperCase(), input0)) return;
     startCooldown(key);
-    log(`${key.toUpperCase()} → BORG CUBE`, 'ok');
+    log(key.toUpperCase() + ' → BORG CUBE', 'ok');
 }
 
 function selectShip(el) {
     document.querySelectorAll('.ship-choice').forEach(e => e.classList.remove('active'));
     el.classList.add('active');
-    sendCommand('SHIP', el.dataset.ship);
+    const ship = el.dataset.ship;
+    if (!sendCommand('SHIP', ship)) return;
+    log(`Ship set to: ${ship}`, 'ok');
 }
 
+// ── Cooldown system ────────────────────────────────────────────────────────
 function isOnCooldown(key) {
     return cooldowns[key] && Date.now() < cooldowns[key];
 }
@@ -803,32 +869,30 @@ function tickCooldown(key) {
     const cdMap  = { faw:'cd-faw', spread:'cd-spread', heal:'cd-heal', cloak:'cd-cloak' };
 
     if (remaining <= 0) {
-        if (btnMap[key]) {
-            btnMap[key].forEach(id => {
-                const b = document.getElementById(id);
-                if (b) { b.disabled = false; b.classList.remove('on-cd'); }
-            });
-        }
+        const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
+        ids.forEach(id => { const b = document.getElementById(id); if (b) { b.disabled=false; b.classList.remove('on-cd'); } });
         const cd = document.getElementById(cdMap[key]);
         if (cd) cd.innerText = '—';
         return;
     }
 
-    if (btnMap[key]) {
-        btnMap[key].forEach(id => {
-            const b = document.getElementById(id);
-            if (b) { b.disabled = true; b.classList.add('on-cd'); }
-        });
-    }
+    const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
+    ids.forEach(id => { const b = document.getElementById(id); if (b) { b.disabled=true; b.classList.add('on-cd'); } });
     const cd = document.getElementById(cdMap[key]);
     if (cd) cd.innerText = remaining + 's';
+
+    // Also grey out matching boss button
+    const bossBtnMap = { fire:'btn-boss-fire', torp:'btn-boss-torp', ram:'btn-boss-ram' };
+    const bossBtn = document.getElementById(bossBtnMap[key]);
+    if (bossBtn) bossBtn.disabled = remaining > 0;
 
     setTimeout(() => tickCooldown(key), 1000);
 }
 
+// ── Fleet rendering ────────────────────────────────────────────────────────
 function renderFleet() {
-    const list = document.getElementById('fleet-list');
-    const names = Object.keys(fleet);
+    const list   = document.getElementById('fleet-list');
+    const names  = Object.keys(fleet);
     document.getElementById('fleet-count').innerText = `(${names.length})`;
 
     if (!names.length) {
@@ -837,26 +901,30 @@ function renderFleet() {
     }
 
     list.innerHTML = names.map(n => {
-        const s = fleet[n];
-        const pct = s.maxHp > 0 ? Math.max(0, s.hp / s.maxHp * 100) : 0;
-        const col = pct < 25 ? 'var(--red)' : pct < 50 ? 'var(--orange)' : 'var(--green)';
+        const s    = fleet[n];
+        const pct  = s.maxHp > 0 ? Math.max(0, s.hp / s.maxHp * 100) : 0;
+        const col  = pct < 25 ? 'var(--red)' : pct < 50 ? 'var(--orange)' : 'var(--green)';
         const isMe = n.toLowerCase() === myName.toLowerCase();
+        const status = s.isCloaked ? '👻' : s.isRamming ? '⚡' : '';
         return `<div class="fleet-ship ${isMe?'is-me':''} ${s.killStreak>=3?'is-streaking':''}">
             <span class="fleet-name ${isMe?'me':''}">${n}</span>
             <div class="fleet-hp-wrap"><div class="fleet-hp-fill" style="width:${pct}%;background:${col}"></div></div>
             <span class="fleet-streak">${s.killStreak>=1?'🔥'+s.killStreak+'x':''}</span>
-            <span class="fleet-status">${s.isCloaked?'👻':s.isRamming?'⚡':''}</span>
+            <span class="fleet-status">${status}</span>
         </div>`;
     }).join('');
 
+    // Update target dropdowns
     ['fire','torp','ram'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
         const cur = sel.value;
         sel.innerHTML = '<option value="">— SELECT TARGET —</option>' +
             names.filter(n => n.toLowerCase() !== myName.toLowerCase())
-                 .map(n => `<option value="${n}" ${n===cur?'selected':''}>${n}</option>`)
+                 .map(n => `<option value="${n}" ${n===cur?'selected':''}>${n}${fleet[n]?.killStreak>=3?' 🔥':''}</option>`)
                  .join('');
     });
+
+    // Update my ship panel
     updateMyShip();
 }
 
@@ -866,11 +934,14 @@ function updateMyShip() {
     const panel = document.getElementById('my-ship');
     if (!key) { panel.style.display = 'none'; return; }
     panel.style.display = 'block';
-    const s = fleet[key];
+    const s   = fleet[key];
     const pct = s.maxHp > 0 ? Math.max(0, s.hp / s.maxHp * 100) : 0;
+    const col = pct < 25 ? 'var(--red)' : pct < 50 ? 'var(--orange)' : 'var(--green)';
     document.getElementById('my-ship-name').innerText = key;
     document.getElementById('my-hp-bar').style.width = pct + '%';
+    document.getElementById('my-hp-bar').style.background = col;
     document.getElementById('my-hp-text').innerText = `${Math.max(0,s.hp)} / ${s.maxHp} HP`;
+    document.getElementById('my-streak').innerText = s.killStreak > 0 ? `🔥 ${s.killStreak} KILL STREAK` : '';
 }
 
 function updateBossAlert() {
@@ -882,42 +953,130 @@ function updateBossAlert() {
     document.getElementById('boss-hp-text').innerText = borgHp.toLocaleString() + ' HP';
 }
 
+// ── Username input ─────────────────────────────────────────────────────────
+// ── Twitch OAuth ──────────────────────────────────────────────────────────
 const TWITCH_CLIENT_ID   = 'yjnejxr98o87fzmsd09qk0xoqd0i0f';
 const TWITCH_REDIRECT    = 'https://shoddyinterceptor-beep.github.io/dsr-companion/';
+const TWITCH_SCOPE       = 'user:read:email';
 
 function twitchLogin() {
     const state = Math.random().toString(36).substring(2);
     sessionStorage.setItem('twitch_state', state);
-    window.location.href = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(TWITCH_REDIRECT)}&response_type=token&scope=user:read:email&state=${state}`;
+    const url = `https://id.twitch.tv/oauth2/authorize` +
+        `?client_id=${TWITCH_CLIENT_ID}` +
+        `&redirect_uri=${encodeURIComponent(TWITCH_REDIRECT)}` +
+        `&response_type=token` +
+        `&scope=${TWITCH_SCOPE}` +
+        `&state=${state}`;
+    window.location.href = url;
 }
 
 function twitchLogout() {
-    sessionStorage.clear();
-    location.reload();
+    sessionStorage.removeItem('twitch_token');
+    sessionStorage.removeItem('twitch_user');
+    myName = '';
+    document.getElementById('login-area').style.display = 'block';
+    document.getElementById('logged-in-area').style.display = 'none';
+    document.getElementById('my-ship').style.display = 'none';
+    log('Logged out', '');
 }
 
 async function handleOAuthCallback() {
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
-    const token = params.get('access_token');
+    const token  = params.get('access_token');
+    const state  = params.get('state');
+
     if (!token) return;
+
+    // Validate state
+    if (state !== sessionStorage.getItem('twitch_state')) {
+        log('OAuth state mismatch — possible attack!', 'err');
+        return;
+    }
+
+    // Clean URL
     history.replaceState(null, '', window.location.pathname);
+
+    // Fetch user info from Twitch
     try {
-        const res = await fetch('https://api.twitch.tv/helix/users', { headers: { 'Authorization': `Bearer ${token}`, 'Client-Id': TWITCH_CLIENT_ID } });
+        const res  = await fetch('https://api.twitch.tv/helix/users', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Client-Id': TWITCH_CLIENT_ID
+            }
+        });
         const data = await res.json();
-        if (data.data && data.data[0]) {
-            const user = data.data[0];
-            myName = user.display_name;
-            document.getElementById('login-area').style.display = 'none';
-            document.getElementById('logged-in-area').style.display = 'block';
-            document.getElementById('twitch-avatar').src = user.profile_image_url;
-            document.getElementById('twitch-display-name').innerText = myName;
-            log('Authenticated as ' + myName, 'ok');
-        }
-    } catch(e) { log('Login error', 'err'); }
+        const user = data.data[0];
+
+        sessionStorage.setItem('twitch_token', token);
+        sessionStorage.setItem('twitch_user', JSON.stringify(user));
+        setTwitchUser(user);
+        log(`Verified as ${user.display_name}`, 'ok');
+    } catch(e) {
+        log('Failed to verify Twitch identity', 'err');
+    }
 }
 
-handleOAuthCallback();
+function setTwitchUser(user) {
+    myName = user.display_name;
+    document.getElementById('login-area').style.display = 'none';
+    document.getElementById('logged-in-area').style.display = 'block';
+    document.getElementById('twitch-display-name').innerText = user.display_name;
+    document.getElementById('twitch-avatar').src = user.profile_image_url;
+    updateMyShip();
+}
+
+function checkExistingSession() {
+    const stored = sessionStorage.getItem('twitch_user');
+    if (stored) {
+        try { setTwitchUser(JSON.parse(stored)); } catch(_) {}
+    }
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function setStatus(online, text) {
+    document.getElementById('dot').className = 'dot' + (online ? ' online' : '');
+    document.getElementById('conn-text').innerText = text;
+}
+
+function log(msg, type='') {
+    const el = document.getElementById('log');
+    const d  = document.createElement('div');
+    d.className = 'entry ' + type;
+    d.innerText = '> ' + msg;
+    el.insertBefore(d, el.firstChild);
+    while (el.children.length > 8) el.removeChild(el.lastChild);
+}
+
+function findUsers(obj) {
+    if (!obj || typeof obj !== 'object') return null;
+    for (const key of ['users','viewers','chatters','participants']) if (Array.isArray(obj[key])) return obj[key];
+    for (const val of Object.values(obj)) if (val && typeof val === 'object')
+        for (const key of ['users','viewers','chatters','participants']) if (Array.isArray(val[key])) return val[key];
+    return null;
+}
+
+function extractName(u) {
+    if (!u) return null;
+    return u.display || u.display_name || u.displayName || u.userName || u.login || u.user || u.name || null;
+}
+
+// ── Periodically refresh fleet from active viewers ────────────────────────
+setInterval(() => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ request:'GetActiveViewers', id:'refresh' }));
+    }
+}, 30000);
+
+// State pushed via WebsocketBroadcastString from DSR Store State action
+
+
+
+// ── Start ──────────────────────────────────────────────────────────────────
+handleOAuthCallback(); // handle Twitch redirect if returning from login
+checkExistingSession(); // restore session if already logged in
+log('Login with Twitch, then paste the streamer connection URL', '');
 </script>
 </body>
 </html>

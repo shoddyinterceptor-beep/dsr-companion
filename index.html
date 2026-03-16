@@ -631,7 +631,7 @@ function connect() {
 
     ws.onopen = () => {
         setStatus(true, 'ONLINE — STREAMER.BOT CONNECTED');
-        ws.send(JSON.stringify({ request:'Subscribe', id:'companion-sub', events:{ Twitch:['ChatMessage'] } }));
+        ws.send(JSON.stringify({ request:'Subscribe', id:'companion-sub', events:{ Twitch:['ChatMessage'], General:['Custom'] } }));
         ['GetActiveViewers','GetViewers','GetUsers'].forEach((r,i) =>
             setTimeout(() => ws.send(JSON.stringify({request:r,id:r})), i*300)
         );

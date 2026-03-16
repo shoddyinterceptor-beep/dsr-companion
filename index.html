@@ -651,27 +651,16 @@ function connect() {
 }
 
 function handleMsg(msg) {
-    // DEBUG — log General.Custom in full chunks
-    const msgStr = JSON.stringify(msg);
+    // Handle DSR_STATE broadcast from Streamer.bot C# timed action
     if (msg.event && msg.event.source === 'General' && msg.event.type === 'Custom') {
-        log('GC1: ' + msgStr.substring(0, 200), '');
-        log('GC2: ' + msgStr.substring(200, 400), '');
-        log('GC3: ' + msgStr.substring(400, 600), '');
-    } else if (!msgStr.includes('companion-sub') && !msgStr.includes('refresh')) {
-        log('DBG: ' + msgStr.substring(0, 120), '');
-    }
-
-    // Handle BroadcastCustomEvent — arrives as General.Custom
-    if (msg.event && msg.event.source === 'General' && msg.event.type === 'Custom') {
-        const args = msg.data && msg.data.args;
-        if (args && args.type === 'DSR_STATE') {
+        const args = (msg.data && msg.data.data) || (msg.data && msg.data.args) || null;
+        if (args && args.type === 'DSR_STATE' && args.stateJson) {
             try {
-                const fleetData = typeof args.fleet === 'string' ? JSON.parse(args.fleet) : args.fleet;
-                if (fleetData) { fleet = fleetData; renderFleet(); }
-                borgActive = args.borgActive || false;
-                borgHp     = args.borgHp    || 0;
+                const state = JSON.parse(args.stateJson);
+                if (state.fleet) { fleet = state.fleet; renderFleet(); }
+                borgActive = state.borgActive || false;
+                borgHp     = state.borgHp    || 0;
                 updateBossAlert();
-                log('Fleet updated: ' + Object.keys(fleetData||{}).length + ' ships', 'ok');
             } catch(e) { log('Parse err: ' + e.message, 'err'); }
         }
         return;

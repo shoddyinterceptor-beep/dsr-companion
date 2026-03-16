@@ -651,7 +651,26 @@ function connect() {
 }
 
 function handleMsg(msg) {
-    // Handle DSR_STATE relayed via BroadcastCustomEvent from overlay
+    // DEBUG — log non-noise messages
+    const msgStr = JSON.stringify(msg);
+    if (!msgStr.includes('ChatMessage') && !msgStr.includes('companion-sub') && !msgStr.includes('refresh') && !msgStr.includes('state-request')) {
+        log('DBG: ' + msgStr.substring(0, 150), '');
+    }
+
+    // Handle raw WebsocketBroadcastString from C#
+    if (msg.type === 'DSR_STATE' && msg.stateJson) {
+        try {
+            const state = typeof msg.stateJson === 'string' ? JSON.parse(msg.stateJson) : msg.stateJson;
+            if (state.fleet) { fleet = state.fleet; renderFleet(); }
+            borgActive = state.borgActive || false;
+            borgHp     = state.borgHp    || 0;
+            updateBossAlert();
+            log('Fleet OK: ' + Object.keys(state.fleet||{}).length + ' ships', 'ok');
+        } catch(e) { log('Parse err: ' + e.message, 'err'); }
+        return;
+    }
+
+    // Handle General.Custom relay
     if (msg.event && msg.event.source === 'General' && msg.event.type === 'Custom') {
         const d = (msg.data && msg.data.data) || (msg.data && msg.data.args) || null;
         if (d && d.type === 'DSR_STATE' && d.state) {

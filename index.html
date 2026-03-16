@@ -585,7 +585,7 @@ const COOLDOWNS_SECONDS = {
     torp:   90,   // !torp   — TorpSingleTarget action
     spread: 100,  // !spread — spreadTorpedo action
     heal:   45,   // !heal   — Heal_DSR action
-    cloak:  180,   // !cloak  — CloakDSR action
+    cloak:  180,  // !cloak  — CloakDSR action
     ram:    120,  // !ram    — Ram DSR action
 };
 // ═══════════════════════════════════════════════════════════════════
@@ -631,7 +631,7 @@ function connect() {
 
     ws.onopen = () => {
         setStatus(true, 'ONLINE — STREAMER.BOT CONNECTED');
-        ws.send(JSON.stringify({ request:'Subscribe', id:'companion-sub', events:{ Twitch:['ChatMessage'], General:['Custom'] } }));
+        ws.send(JSON.stringify({ request:'Subscribe', id:'companion-sub', events:{ Twitch:['ChatMessage'] } }));
         ['GetActiveViewers','GetViewers','GetUsers'].forEach((r,i) =>
             setTimeout(() => ws.send(JSON.stringify({request:r,id:r})), i*300)
         );
@@ -651,23 +651,22 @@ function connect() {
 }
 
 function handleMsg(msg) {
-    // BroadcastCustomEvent wrapper from Streamer.bot
-    const inner = (msg.data && msg.data.type === 'DSR_STATE') ? msg.data
-                : (msg.type === 'DSR_STATE')                  ? msg
-                : null;
-
-    if (inner) {
-        if (inner.fleet) {
-            fleet = inner.fleet;
-            renderFleet();
+    // Handle GetGlobalVar response for DSR_STATE
+    if (msg.id === 'poll-dsr-state' && msg.variables) {
+        const raw = msg.variables['dsr_state'];
+        if (raw) {
+            try {
+                const state = JSON.parse(raw);
+                if (state.fleet) { fleet = state.fleet; renderFleet(); }
+                borgActive = state.borgActive || false;
+                borgHp     = state.borgHp    || 0;
+                updateBossAlert();
+            } catch(e) {}
         }
-        borgActive = inner.borgActive || false;
-        borgHp     = inner.borgHp    || 0;
-        updateBossAlert();
         return;
     }
 
-    // Bulk user list fallback (used before first DSR_STATE arrives)
+    // Bulk user list fallback
     const users = findUsers(msg);
     if (users) {
         users.forEach(u => {
@@ -677,6 +676,17 @@ function handleMsg(msg) {
         renderFleet();
     }
 }
+
+// Poll the overlay state via Streamer.bot global var every 2 seconds
+function pollState() {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({
+        request: 'GetGlobalVar',
+        id:      'poll-dsr-state',
+        variable: 'dsr_state'
+    }));
+}
+setInterval(pollState, 2000);
 
 // Maps command type to exact Streamer.bot action name
 const ACTION_NAMES = {

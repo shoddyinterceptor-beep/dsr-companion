@@ -654,7 +654,7 @@ function handleMsg(msg) {
     // DEBUG — log ALL messages briefly so we can see everything
     const msgStr = JSON.stringify(msg);
     if (!msgStr.includes('poll-dsr-state') && !msgStr.includes('companion-sub') && !msgStr.includes('refresh')) {
-        log('DBG: ' + msgStr.substring(0, 120), '');
+        log('DBG: ' + msgStr.substring(0, 300), '');
     }
 
     // Handle BroadcastCustomEvent — arrives as General.Custom

@@ -657,16 +657,19 @@ function handleMsg(msg) {
         log('DBG: ' + msgStr.substring(0, 120), '');
     }
 
-    // Handle BroadcastCustomEvent DSR_STATE — try all known formats
-    const args = (msg.data && msg.data.args) || null;
-    if (args && args.type === 'DSR_STATE') {
-        try {
-            const fleetData = typeof args.fleet === 'string' ? JSON.parse(args.fleet) : args.fleet;
-            if (fleetData) { fleet = fleetData; renderFleet(); }
-            borgActive = args.borgActive || false;
-            borgHp     = args.borgHp    || 0;
-            updateBossAlert();
-        } catch(e) { log('Parse err: ' + e.message, 'err'); }
+    // Handle BroadcastCustomEvent — arrives as General.Custom
+    if (msg.event && msg.event.source === 'General' && msg.event.type === 'Custom') {
+        const args = msg.data && msg.data.args;
+        if (args && args.type === 'DSR_STATE') {
+            try {
+                const fleetData = typeof args.fleet === 'string' ? JSON.parse(args.fleet) : args.fleet;
+                if (fleetData) { fleet = fleetData; renderFleet(); }
+                borgActive = args.borgActive || false;
+                borgHp     = args.borgHp    || 0;
+                updateBossAlert();
+                log('Fleet updated: ' + Object.keys(fleetData||{}).length + ' ships', 'ok');
+            } catch(e) { log('Parse err: ' + e.message, 'err'); }
+        }
         return;
     }
 

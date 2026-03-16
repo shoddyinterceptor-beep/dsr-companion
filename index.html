@@ -651,12 +651,6 @@ function connect() {
 }
 
 function handleMsg(msg) {
-    // DEBUG — log non-noise messages
-    const msgStr = JSON.stringify(msg);
-    if (!msgStr.includes('ChatMessage') && !msgStr.includes('companion-sub') && !msgStr.includes('refresh') && !msgStr.includes('state-request')) {
-        log('DBG: ' + msgStr.substring(0, 150), '');
-    }
-
     // Handle raw WebsocketBroadcastString from C#
     if (msg.type === 'DSR_STATE' && msg.stateJson) {
         try {
@@ -674,19 +668,16 @@ function handleMsg(msg) {
     if (msg.event && msg.event.source === 'General' && msg.event.type === 'Custom') {
         try {
             const raw = msg.data && msg.data.data;
-            log('RAW type: ' + typeof raw + ' val: ' + String(raw).substring(0, 80), '');
             if (!raw) return;
             const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-            log('PARSED type: ' + parsed.type + ' hasState: ' + !!parsed.stateJson, '');
             if (parsed.type === 'DSR_STATE' && parsed.stateJson) {
                 const state = typeof parsed.stateJson === 'string' ? JSON.parse(parsed.stateJson) : parsed.stateJson;
-                log('STATE fleet keys: ' + Object.keys(state.fleet||{}).join(','), 'ok');
                 if (state.fleet) { fleet = state.fleet; renderFleet(); }
                 borgActive = state.borgActive || false;
                 borgHp     = state.borgHp    || 0;
                 updateBossAlert();
             }
-        } catch(e) { log('Parse err: ' + e.message, 'err'); }
+        } catch(e) {}
         return;
     }
     // Handle Custom.CodeEvent DSRState from C# TriggerCodeEvent

@@ -631,7 +631,7 @@ function connect() {
 
     ws.onopen = () => {
         setStatus(true, 'ONLINE — STREAMER.BOT CONNECTED');
-        ws.send(JSON.stringify({ request:'Subscribe', id:'companion-sub', events:{ Twitch:['ChatMessage'] } }));
+        ws.send(JSON.stringify({ request:'Subscribe', id:'companion-sub', events:{ Twitch:['ChatMessage'], General:['Custom'] } }));
         ['GetActiveViewers','GetViewers','GetUsers'].forEach((r,i) =>
             setTimeout(() => ws.send(JSON.stringify({request:r,id:r})), i*300)
         );
@@ -651,26 +651,15 @@ function connect() {
 }
 
 function handleMsg(msg) {
-    // Handle GetGlobalVar response for DSR_STATE
-    if (msg.id === 'poll-dsr-state') {
-        // Streamer.bot can return value in different fields depending on version
-        const raw = msg.value
-                 || (msg.variables && msg.variables['dsr_state'])
-                 || (msg.data && msg.data.value)
-                 || null;
-        if (raw) {
-            try {
-                const state = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                if (state.fleet) { fleet = state.fleet; renderFleet(); }
-                borgActive = state.borgActive || false;
-                borgHp     = state.borgHp    || 0;
-                updateBossAlert();
-                log('State updated: ' + Object.keys(state.fleet||{}).length + ' ships', 'ok');
-            } catch(e) { log('State parse error: ' + e.message, 'err'); }
-        } else {
-            // Log full message to help debug
-            log('Poll response: ' + JSON.stringify(msg).substring(0, 80), '');
-        }
+    // Handle BroadcastCustomEvent DSR_STATE from overlay
+    // Streamer.bot wraps it as: { event: { source:'Custom', type:'Event' }, data: { args: { eventName, fleet, ... } } }
+    const isCustomEvent = msg.event && msg.event.source === 'Custom' && msg.event.type === 'Event';
+    if (isCustomEvent && msg.data && msg.data.args && msg.data.args.eventName === 'DSR_STATE') {
+        const state = msg.data.args;
+        if (state.fleet) { fleet = state.fleet; renderFleet(); }
+        borgActive = state.borgActive || false;
+        borgHp     = state.borgHp    || 0;
+        updateBossAlert();
         return;
     }
 
@@ -685,16 +674,7 @@ function handleMsg(msg) {
     }
 }
 
-// Poll the overlay state via Streamer.bot global var every 2 seconds
-function pollState() {
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
-    ws.send(JSON.stringify({
-        request: 'GetGlobalVar',
-        id:      'poll-dsr-state',
-        name:    'dsr_state'
-    }));
-}
-setInterval(pollState, 2000);
+
 
 // Maps command type to exact Streamer.bot action name
 const ACTION_NAMES = {

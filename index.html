@@ -651,6 +651,12 @@ function connect() {
 }
 
 function handleMsg(msg) {
+    // DEBUG — log everything except known noise
+    const msgStr = JSON.stringify(msg);
+    if (!msgStr.includes('companion-sub') && !msgStr.includes('refresh') && !msgStr.includes('ChatMessage')) {
+        log('DBG: ' + msgStr.substring(0, 150), '');
+    }
+
     // Handle DSR_STATE from WebsocketBroadcastJson — arrives as raw message
     if (msg.type === 'DSR_STATE' && msg.stateJson) {
         try {
@@ -659,6 +665,7 @@ function handleMsg(msg) {
             borgActive = state.borgActive || false;
             borgHp     = state.borgHp    || 0;
             updateBossAlert();
+            log('Fleet OK: ' + Object.keys(state.fleet||{}).length + ' ships', 'ok');
         } catch(e) { log('Parse err: ' + e.message, 'err'); }
         return;
     }

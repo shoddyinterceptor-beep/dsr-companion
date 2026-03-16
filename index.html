@@ -865,7 +865,7 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','boss-fire'], torp:['btn-torp','boss-torp'], ram:['btn-ram','boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'] };
     const cdMap  = { faw:'cd-faw', spread:'cd-spread', heal:'cd-heal', cloak:'cd-cloak' };
 
     if (remaining <= 0) {
@@ -880,11 +880,6 @@ function tickCooldown(key) {
     ids.forEach(id => { const b = document.getElementById(id); if (b) { b.disabled=true; b.classList.add('on-cd'); } });
     const cd = document.getElementById(cdMap[key]);
     if (cd) cd.innerText = remaining + 's';
-
-    // Also grey out matching boss button
-    const bossBtnMap = { fire:'btn-boss-fire', torp:'btn-boss-torp', ram:'btn-boss-ram' };
-    const bossBtn = document.getElementById(bossBtnMap[key]);
-    if (bossBtn) bossBtn.disabled = remaining > 0;
 
     setTimeout(() => tickCooldown(key), 1000);
 }

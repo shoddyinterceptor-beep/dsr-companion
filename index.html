@@ -575,6 +575,26 @@ header p {
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════════
+// COOLDOWN SETTINGS — edit these to match your Streamer.bot cooldowns
+// Change the number (in seconds) whenever you update Streamer.bot
+// ═══════════════════════════════════════════════════════════════════
+const COOLDOWNS_SECONDS = {
+    fire:   60,   // !fire   — concentrateFire action
+    faw:    60,   // !faw    — FAW action
+    torp:   90,   // !torp   — TorpSingleTarget action
+    spread: 100,  // !spread — spreadTorpedo action
+    heal:   45,   // !heal   — Heal_DSR action
+    cloak:  60,   // !cloak  — CloakDSR action
+    ram:    120,  // !ram    — Ram DSR action
+};
+// ═══════════════════════════════════════════════════════════════════
+// Auto-converts seconds to milliseconds — do not edit below this line
+const CD = Object.fromEntries(
+    Object.entries(COOLDOWNS_SECONDS).map(([k, v]) => [k, v * 1000])
+);
+// ═══════════════════════════════════════════════════════════════════
+
 // ── CONFIG — WS_HOST is set by viewer via the connection panel ────────────
 let WS_HOST = '';
 
@@ -586,16 +606,7 @@ let borgHp    = 0;
 let borgActive = false;
 const cooldowns = {}; // abilityKey -> expiry timestamp
 
-// Cooldown durations in ms (mirrors Streamer.bot settings)
-const CD = {
-    fire:   60000,
-    torp:   90000,
-    spread: 100000,
-    faw:    60000,
-    heal:   45000,
-    cloak:  60000,  // adjust to match your Streamer.bot setting
-    ram:    120000, // adjust to match your Streamer.bot setting
-};
+
 
 // ── WebSocket ──────────────────────────────────────────────────────────────
 function connectToHost() {

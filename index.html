@@ -652,16 +652,24 @@ function connect() {
 
 function handleMsg(msg) {
     // Handle GetGlobalVar response for DSR_STATE
-    if (msg.id === 'poll-dsr-state' && msg.variables) {
-        const raw = msg.variables['dsr_state'];
+    if (msg.id === 'poll-dsr-state') {
+        // Streamer.bot can return value in different fields depending on version
+        const raw = msg.value
+                 || (msg.variables && msg.variables['dsr_state'])
+                 || (msg.data && msg.data.value)
+                 || null;
         if (raw) {
             try {
-                const state = JSON.parse(raw);
+                const state = typeof raw === 'string' ? JSON.parse(raw) : raw;
                 if (state.fleet) { fleet = state.fleet; renderFleet(); }
                 borgActive = state.borgActive || false;
                 borgHp     = state.borgHp    || 0;
                 updateBossAlert();
-            } catch(e) {}
+                log('State updated: ' + Object.keys(state.fleet||{}).length + ' ships', 'ok');
+            } catch(e) { log('State parse error: ' + e.message, 'err'); }
+        } else {
+            // Log full message to help debug
+            log('Poll response: ' + JSON.stringify(msg).substring(0, 80), '');
         }
         return;
     }

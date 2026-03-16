@@ -640,24 +640,26 @@ function connect() {
 }
 
 function handleMsg(msg) {
-    // Bulk user list
+    // Live DSR_STATE from overlay — most accurate source, use it preferentially
+    if (msg.type === 'DSR_STATE') {
+        if (msg.fleet) {
+            fleet = msg.fleet;
+            renderFleet();
+        }
+        borgActive = msg.borgActive || false;
+        borgHp     = msg.borgHp    || 0;
+        updateBossAlert();
+        return;
+    }
+
+    // Bulk user list fallback (used before first DSR_STATE arrives)
     const users = findUsers(msg);
     if (users) {
         users.forEach(u => {
             const n = extractName(u);
-            if (n && !fleet[n]) fleet[n] = { hp: 250, maxHp: 250, killStreak: 0, isCloaked: false };
+            if (n && !fleet[n]) fleet[n] = { hp: 250, maxHp: 250, killStreak: 0, isCloaked: false, isRamming: false };
         });
         renderFleet();
-    }
-
-    // DSR overlay state updates — overlay broadcasts ship state
-    if (msg.type === 'DSR_STATE') {
-        if (msg.fleet)  { fleet = msg.fleet; renderFleet(); }
-        if (msg.borg !== undefined) {
-            borgActive = msg.borgActive || false;
-            borgHp     = msg.borgHp || 0;
-            updateBossAlert();
-        }
     }
 }
 

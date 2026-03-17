@@ -383,6 +383,64 @@ header p {
 .ship-choice.active { border-color: var(--cyan); color: var(--cyan); box-shadow: var(--glow-c); background: #0a1a2a; }
 .ship-choice .ship-icon { font-size: 18px; display: block; margin-bottom: 4px; }
 
+/* ── Ship SVGs ── */
+.ship-svg { width:100%; height:100%; }
+
+/* ── Modal overlay ── */
+#vessel-modal {
+  display: none;
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.85);
+  align-items: center; justify-content: center;
+}
+#vessel-modal.open { display: flex; }
+.vessel-modal-inner {
+  background: var(--panel);
+  border: 1px solid var(--cyan);
+  border-radius: 6px;
+  padding: 20px;
+  width: 90%; max-width: 380px;
+  box-shadow: 0 0 30px #00d4ff44;
+}
+.vessel-modal-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  color: var(--cyan);
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.vessel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.vessel-choice {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 6px 6px;
+  cursor: pointer;
+  text-align: center;
+  font-family: 'Orbitron', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: var(--dim);
+  transition: all 0.15s;
+}
+.vessel-choice:hover { border-color: var(--cyan); color: var(--cyan); background: #0a1a2a; }
+.vessel-choice.active { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 10px #00d4ff44; background: #0a1a2a; }
+.vessel-svg-wrap { width: 60px; height: 50px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; }
+.vessel-close {
+  width: 100%; background: none; border: 1px solid var(--dim);
+  color: var(--dim); font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; padding: 8px; cursor: pointer; border-radius: 3px;
+}
+.vessel-close:hover { border-color: var(--cyan); color: var(--cyan); }
+
 /* ── Log ── */
 #log { font-size: 10px; line-height: 1.8; max-height: 80px; overflow-y: auto; }
 #log .entry { color: var(--dim); }
@@ -547,15 +605,15 @@ header p {
     <div class="panel-title">▸ TARGETED WEAPONS</div>
     <div class="target-row">
       <select id="fire-target"><option value="">— SELECT TARGET —</option></select>
-      <button class="fire-btn" id="btn-fire" onclick="useTargeted('fire')">🎯 FIRE</button>
+      <button class="fire-btn" id="btn-fire" onclick="useTargeted('fire')" style="position:relative;overflow:hidden">🎯 FIRE<div class="cd-overlay" id="cd-fire" style="font-size:14px"></div></button>
     </div>
     <div class="target-row">
       <select id="torp-target"><option value="">— SELECT TARGET —</option></select>
-      <button class="fire-btn" id="btn-torp" onclick="useTargeted('torp')" style="border-color:var(--orange);color:var(--orange)">🚀 TORP</button>
+      <button class="fire-btn" id="btn-torp" onclick="useTargeted('torp')" style="border-color:var(--orange);color:var(--orange);position:relative;overflow:hidden">🚀 TORP<div class="cd-overlay" id="cd-torp" style="font-size:14px;color:var(--orange)"></div></button>
     </div>
     <div class="target-row">
       <select id="ram-target"><option value="">— SELECT TARGET —</option></select>
-      <button class="fire-btn" id="btn-ram" onclick="useTargeted('ram')" style="border-color:var(--gold);color:var(--gold)">⚡ RAM</button>
+      <button class="fire-btn" id="btn-ram" onclick="useTargeted('ram')" style="border-color:var(--gold);color:var(--gold);position:relative;overflow:hidden">⚡ RAM<div class="cd-overlay" id="cd-ram" style="font-size:14px;color:var(--gold)"></div></button>
     </div>
   </div>
 
@@ -596,25 +654,42 @@ header p {
   </div>
 
   <!-- Ship selector -->
+  <!-- Vessel modal -->
+  <div id="vessel-modal" onclick="closeVesselModal(event)">
+    <div class="vessel-modal-inner">
+      <div class="vessel-modal-title">▸ SELECT YOUR VESSEL</div>
+      <div class="vessel-grid">
+        <div class="vessel-choice" data-ship="california" onclick="selectShipModal(this)">
+          <div class="vessel-svg-wrap" id="svgwrap-california"></div>
+          CALIFORNIA
+        </div>
+        <div class="vessel-choice" data-ship="chimera" onclick="selectShipModal(this)">
+          <div class="vessel-svg-wrap" id="svgwrap-chimera"></div>
+          CHIMERA
+        </div>
+        <div class="vessel-choice" data-ship="dorito" onclick="selectShipModal(this)">
+          <div class="vessel-svg-wrap" id="svgwrap-dorito"></div>
+          DORITO
+        </div>
+        <div class="vessel-choice" data-ship="disco" onclick="selectShipModal(this)">
+          <div class="vessel-svg-wrap" id="svgwrap-disco"></div>
+          DISCO
+        </div>
+        <div class="vessel-choice active" data-ship="random" onclick="selectShipModal(this)" id="vessel-random">
+          <div class="vessel-svg-wrap" id="svgwrap-random"></div>
+          UNDEADABLE
+        </div>
+      </div>
+      <button class="vessel-close" onclick="document.getElementById('vessel-modal').classList.remove('open')">CLOSE</button>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="panel-title">▸ VESSEL SELECTION</div>
-    <div class="ship-choices">
-      <div class="ship-choice" data-ship="california" onclick="selectShip(this)">
-        <span class="ship-icon">🛸</span>CALIFORNIA
-      </div>
-      <div class="ship-choice" data-ship="chimera" onclick="selectShip(this)">
-        <span class="ship-icon">🦅</span>CHIMERA
-      </div>
-      <div class="ship-choice" data-ship="dorito" onclick="selectShip(this)">
-        <span class="ship-icon">🔺</span>DORITO
-      </div>
-      <div class="ship-choice" data-ship="disco" onclick="selectShip(this)">
-        <span class="ship-icon">💿</span>DISCO
-      </div>
-      <div class="ship-choice active" data-ship="random" onclick="selectShip(this)">
-        <span class="ship-icon">🎲</span>RANDOM
-      </div>
-    </div>
+    <button class="ability-btn info" id="btn-vessel" onclick="openVesselModal()" style="width:100%;padding:14px">
+      <span class="btn-icon" id="vessel-current-svg" style="display:block;width:60px;height:50px;margin:0 auto 4px"></span>
+      <span class="btn-label" id="vessel-current-name">SELECT YOUR VESSEL</span>
+    </button>
   </div>
 
   <!-- Fleet roster -->
@@ -844,6 +919,197 @@ function useBossTarget(key) {
     log(key.toUpperCase() + ' → BORG CUBE', 'ok');
 }
 
+
+// ── Ship SVG functions (copied from overlay) ──────────────────────────────
+function getFederationSVG(color) {
+    const dim = color.replace('65%', '30%');
+    return `<svg class="ship-svg" viewBox="0 0 100 100" style="filter:drop-shadow(0 0 6px ${color})">
+        <rect x="10" y="25" width="45" height="8" rx="2" fill="${dim}" stroke="${color}" stroke-width="2"/>
+        <rect x="10" y="67" width="45" height="8" rx="2" fill="${dim}" stroke="${color}" stroke-width="2"/>
+        <path d="M40 40 L65 40 L70 50 L65 60 L40 60 Z" fill="${dim}" stroke="${color}" stroke-width="2"/>
+        <ellipse cx="70" cy="50" rx="25" ry="28" fill="${dim}" stroke="${color}" stroke-width="3"/>
+        <circle cx="70" cy="50" r="7" fill="rgba(255,255,255,0.2)" stroke="${color}" stroke-width="1"/>
+    </svg>`;
+}
+function getBoPSVG(color) {
+    const dim  = color.replace('65%', '22%');
+    const mid  = color.replace('65%', '45%');
+    const glow = color.replace('65%', '80%');
+    /* Flipped horizontally (scale -1,1) so the saucer faces right like all other ships */
+    return `<svg class="ship-svg" viewBox="0 0 96 96"
+              style="transform:scale(-1,1); filter:drop-shadow(0 0 6px ${color})">
+        <!-- Neck connector -->
+        <rect x="30" y="44" width="10" height="8" rx="2" fill="${mid}" stroke="${color}" stroke-width="1"/>
+        <!-- Lateral strut -->
+        <line x1="34" y1="48" x2="70" y2="48" stroke="${color}" stroke-width="1" opacity="0.5"/>
+        <!-- Wing struts -->
+        <line x1="58" y1="43" x2="68" y2="22" stroke="${color}" stroke-width="2" opacity="0.9"/>
+        <line x1="58" y1="53" x2="68" y2="74" stroke="${color}" stroke-width="2" opacity="0.9"/>
+        <!-- Central hull disk -->
+        <ellipse cx="52" cy="48" rx="18" ry="7" fill="${mid}" stroke="${color}" stroke-width="1.2"/>
+        <line x1="34" y1="48" x2="70" y2="48" stroke="${glow}" stroke-width="0.8" opacity="0.35"/>
+        <!-- Top nacelle -->
+        <ellipse cx="78" cy="20" rx="18" ry="5" fill="${dim}" stroke="${color}" stroke-width="1.2"/>
+        <ellipse cx="78" cy="20" rx="7"  ry="2.5" fill="${glow}" opacity="0.55"/>
+        <ellipse cx="62" cy="20" rx="4"  ry="3"   fill="${mid}"  opacity="0.9"/>
+        <!-- Bottom nacelle -->
+        <ellipse cx="78" cy="76" rx="18" ry="5" fill="${dim}" stroke="${color}" stroke-width="1.2"/>
+        <ellipse cx="78" cy="76" rx="7"  ry="2.5" fill="${glow}" opacity="0.55"/>
+        <ellipse cx="62" cy="76" rx="4"  ry="3"   fill="${mid}"  opacity="0.9"/>
+        <!-- Command saucer -->
+        <ellipse cx="20" cy="48" rx="16" ry="18" fill="${mid}"  stroke="${color}" stroke-width="1.5"/>
+        <ellipse cx="20" cy="48" rx="9"  ry="10"  fill="${glow}" opacity="0.25"/>
+        <ellipse cx="20" cy="48" rx="13" ry="14"  fill="none"   stroke="${color}" stroke-width="0.8" opacity="0.4"/>
+        <!-- Viewport glint -->
+        <circle cx="14" cy="48" r="4"   fill="white" opacity="0.4"/>
+        <circle cx="13" cy="47" r="1.5" fill="white" opacity="0.35"/>
+        <!-- Nav lights — animated out of phase via CSS classes -->
+        <circle class="nav-red"   cx="20" cy="33" r="2.5" fill="#ff3333"/>
+        <circle class="nav-green" cx="20" cy="63" r="2.5" fill="#44ff44"/>
+        <!-- Engine wash -->
+        <ellipse cx="70" cy="48" rx="3" ry="5" fill="${glow}" opacity="0.7"/>
+    </svg>`;
+}
+function getArrowSVG(color) {
+    const dim  = color.replace('65%', '22%');
+    const mid  = color.replace('65%', '45%');
+    const glow = color.replace('65%', '80%');
+    return `<svg class="ship-svg" viewBox="0 0 100 100" style="filter:drop-shadow(0 0 6px ${color})">
+        <!-- Main arrow body -->
+        <path d="M85 50 L20 20 L35 50 L20 80 Z" fill="${mid}" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- Cockpit -->
+        <ellipse cx="62" cy="50" rx="10" ry="7" fill="${dim}" stroke="${color}" stroke-width="1.5"/>
+        <circle  cx="65" cy="50" r="4" fill="rgba(255,255,255,0.25)" stroke="${color}" stroke-width="1"/>
+        <!-- Engine glow rear -->
+        <ellipse cx="28" cy="50" rx="6" ry="14" fill="${dim}" stroke="${color}" stroke-width="1.2"/>
+        <ellipse cx="26" cy="50" rx="3" ry="8"   fill="${glow}" opacity="0.5"/>
+        <!-- Wing accent lines -->
+        <line x1="40" y1="37" x2="70" y2="44" stroke="${color}" stroke-width="1" opacity="0.6"/>
+        <line x1="40" y1="63" x2="70" y2="56" stroke="${color}" stroke-width="1" opacity="0.6"/>
+    </svg>`;
+}
+
+// ── Speed boost system ─────────────────────────────────────────────────────
+const BOOST_MAX      = 6.0;   // top speed during a boost
+const BOOST_MIN      = 2.5;   // minimum boost speed before it expires
+const RANDOM_BOOST_CHANCE = 0.0008; // per-frame chance per ship of a random boost
+function getDiscoConnieSVG(color) {
+    const dim  = color.replace('65%', '18%');
+    const mid  = color.replace('65%', '32%');
+    const glow = color.replace('65%', '75%');
+    // Facing right: saucer on the right, nacelles on the left, struts diagonal
+    return `<svg class="ship-svg" viewBox="0 0 120 100" style="filter:drop-shadow(0 0 6px ${color})">
+
+        <!-- Top nacelle -->
+        <rect x="5"  y="8"  width="38" height="14" rx="4" fill="${dim}" stroke="${color}" stroke-width="2.2"/>
+
+        <!-- Bottom nacelle -->
+        <rect x="5"  y="78" width="38" height="14" rx="4" fill="${dim}" stroke="${color}" stroke-width="2.2"/>
+
+        <!-- Top diagonal strut: nacelle center-right → neck top -->
+        <line x1="43" y1="15" x2="58" y2="42" stroke="${color}" stroke-width="2.8" stroke-linecap="round"/>
+
+        <!-- Bottom diagonal strut: nacelle center-right → neck bottom -->
+        <line x1="43" y1="85" x2="58" y2="58" stroke="${color}" stroke-width="2.8" stroke-linecap="round"/>
+
+        <!-- Neck / connector block -->
+        <rect x="50" y="42" width="14" height="16" rx="2" fill="${mid}" stroke="${color}" stroke-width="2"/>
+
+        <!-- Saucer outer ring -->
+        <circle cx="88" cy="50" r="28" fill="${dim}"  stroke="${color}" stroke-width="2.5"/>
+        <!-- Saucer ring 2 -->
+        <circle cx="88" cy="50" r="21" fill="none"   stroke="${color}" stroke-width="1.4" opacity="0.7"/>
+        <!-- Saucer ring 3 -->
+        <circle cx="88" cy="50" r="14" fill="${mid}"  stroke="${color}" stroke-width="1.2" opacity="0.8"/>
+        <!-- Saucer center dome -->
+        <circle cx="88" cy="50" r="7"  fill="${glow}" stroke="${color}" stroke-width="1" opacity="0.9"/>
+        <!-- Dome glint -->
+        <circle cx="85" cy="47" r="2.5" fill="white" opacity="0.35"/>
+
+        <!-- Neck-to-saucer connector line -->
+        <line x1="64" y1="50" x2="60" y2="50" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+    </svg>`;
+}
+
+// ── Starfield ──────────────────────────────────────────────────────────────
+function getUndeadableSVG() {
+    return `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 6px #ff2244)">
+        <rect x="2" y="8" width="38" height="9" rx="3" fill="#cc1122" stroke="#ff2244" stroke-width="1.5"/>
+        <rect x="2" y="8" width="8" height="9" rx="2" fill="#880011"/>
+        <rect x="2" y="83" width="38" height="9" rx="3" fill="#cc1122" stroke="#ff2244" stroke-width="1.5"/>
+        <rect x="2" y="83" width="8" height="9" rx="2" fill="#880011"/>
+        <line x1="38" y1="13" x2="55" y2="35" stroke="#cc1122" stroke-width="3"/>
+        <line x1="38" y1="87" x2="55" y2="65" stroke="#cc1122" stroke-width="3"/>
+        <path d="M28 38 L60 32 L90 36 L90 64 L60 68 L28 62 Z" fill="#d0d0d0" stroke="#ff2244" stroke-width="1.5"/>
+        <path d="M35 50 L50 40 L58 50 L50 60 Z" fill="#cc1122" opacity="0.85"/>
+        <path d="M55 50 L65 43 L70 50 L65 57 Z" fill="#cc1122" opacity="0.7"/>
+        <rect x="50" y="46" width="32" height="8" rx="2" fill="#222222"/>
+        <ellipse cx="76" cy="50" rx="7" ry="5" fill="#333333" stroke="#ff2244" stroke-width="1"/>
+        <ellipse cx="76" cy="50" rx="4" ry="3" fill="#cc1122"/>
+        <ellipse cx="105" cy="50" rx="14" ry="18" fill="#d0d0d0" stroke="#ff2244" stroke-width="1.5"/>
+        <ellipse cx="105" cy="50" rx="14" ry="18" fill="none" stroke="#cc1122" stroke-width="3" stroke-dasharray="8,4"/>
+        <ellipse cx="105" cy="50" rx="7" ry="9" fill="#cc1122" opacity="0.6"/>
+        <ellipse cx="105" cy="50" rx="3" ry="4" fill="#880011"/>
+        <rect x="56" y="32" width="6" height="4" rx="1" fill="#ff4400" opacity="0.9"/>
+        <rect x="56" y="64" width="6" height="4" rx="1" fill="#ff4400" opacity="0.9"/>
+    </svg>`;
+}
+
+// ── Vessel modal ──────────────────────────────────────────────────────────
+let selectedShip = 'random';
+
+function initVesselSVGs() {
+    const COLOR = 'hsl(195,100%,65%)';
+    document.getElementById('svgwrap-california').innerHTML = getFederationSVG(COLOR);
+    document.getElementById('svgwrap-chimera').innerHTML    = getBoPSVG(COLOR);
+    document.getElementById('svgwrap-dorito').innerHTML     = getArrowSVG(COLOR);
+    document.getElementById('svgwrap-disco').innerHTML      = getDiscoConnieSVG(COLOR);
+    document.getElementById('svgwrap-random').innerHTML     = getUndeadableSVG();
+    // Set initial current vessel display
+    updateCurrentVesselDisplay();
+}
+
+function openVesselModal() {
+    document.getElementById('vessel-modal').classList.add('open');
+}
+
+function closeVesselModal(e) {
+    if (e.target === document.getElementById('vessel-modal'))
+        document.getElementById('vessel-modal').classList.remove('open');
+}
+
+function selectShipModal(el) {
+    document.querySelectorAll('.vessel-choice').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+    selectedShip = el.dataset.ship;
+    if (!sendCommand('SHIP', selectedShip)) return;
+    log('Ship set to: ' + selectedShip, 'ok');
+    updateCurrentVesselDisplay();
+    setTimeout(() => document.getElementById('vessel-modal').classList.remove('open'), 400);
+}
+
+function updateCurrentVesselDisplay() {
+    const COLOR = 'hsl(195,100%,65%)';
+    const wrap = document.getElementById('vessel-current-svg');
+    const label = document.getElementById('vessel-current-name');
+    const svgMap = {
+        california: getFederationSVG(COLOR),
+        chimera:    getBoPSVG(COLOR),
+        dorito:     getArrowSVG(COLOR),
+        disco:      getDiscoConnieSVG(COLOR),
+        random:     getUndeadableSVG(),
+    };
+    const nameMap = {
+        california: 'USS CALIFORNIA',
+        chimera:    'IKS CHIMERA',
+        dorito:     'USS ARROW',
+        disco:      'USS DISCO',
+        random:     'USS UND34DABL3',
+    };
+    wrap.innerHTML  = svgMap[selectedShip]  || svgMap.random;
+    label.innerText = nameMap[selectedShip] || 'SELECT YOUR VESSEL';
+}
+
 function selectShip(el) {
     document.querySelectorAll('.ship-choice').forEach(e => e.classList.remove('active'));
     el.classList.add('active');
@@ -866,7 +1132,7 @@ function startCooldown(key) {
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
     const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'] };
-    const cdMap  = { faw:'cd-faw', spread:'cd-spread', heal:'cd-heal', cloak:'cd-cloak' };
+    const cdMap  = { fire:'cd-fire', torp:'cd-torp', ram:'cd-ram', faw:'cd-faw', spread:'cd-spread', heal:'cd-heal', cloak:'cd-cloak' };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -885,6 +1151,34 @@ function tickCooldown(key) {
 }
 
 // ── Fleet rendering ────────────────────────────────────────────────────────
+// ── Dead state management ────────────────────────────────────────────────
+function updateDeadState() {
+    if (!myName) return;
+    const alive = Object.keys(fleet).some(k => k.toLowerCase() === myName.toLowerCase());
+    const combatBtns = [
+        'btn-fire','btn-torp','btn-ram','btn-faw','btn-spread','btn-heal','btn-cloak',
+        'btn-boss-fire','btn-boss-torp','btn-boss-ram'
+    ];
+    combatBtns.forEach(id => {
+        const b = document.getElementById(id);
+        if (!b) return;
+        if (!alive) {
+            b.disabled = true;
+            b.style.opacity = '0.2';
+        } else {
+            // Only re-enable if not on cooldown
+            const key = id.replace('btn-boss-','').replace('btn-','');
+            if (!isOnCooldown(key)) {
+                b.disabled = false;
+                b.style.opacity = '';
+            }
+        }
+    });
+    // Always keep respawn enabled
+    const respawn = document.getElementById('btn-respawn');
+    if (respawn) { respawn.disabled = false; respawn.style.opacity = ''; }
+}
+
 function renderFleet() {
     const list   = document.getElementById('fleet-list');
     const names  = Object.keys(fleet);
@@ -921,6 +1215,7 @@ function renderFleet() {
 
     // Update my ship panel
     updateMyShip();
+    updateDeadState();
 }
 
 function updateMyShip() {
@@ -1069,7 +1364,8 @@ setInterval(() => {
 
 
 // ── Start ──────────────────────────────────────────────────────────────────
-handleOAuthCallback(); // handle Twitch redirect if returning from login
+handleOAuthCallback();
+initVesselSVGs(); // handle Twitch redirect if returning from login
 checkExistingSession(); // restore session if already logged in
 log('Login with Twitch, then paste the streamer connection URL', '');
 </script>

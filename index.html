@@ -433,6 +433,8 @@ header p {
 }
 .vessel-choice:hover { border-color: var(--cyan); color: var(--cyan); background: #0a1a2a; }
 .vessel-choice.active { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 10px #00d4ff44; background: #0a1a2a; }
+.vessel-choice.locked { opacity: 0.4; cursor: not-allowed; border-color: var(--dim); }
+.vessel-choice.locked:hover { border-color: var(--dim); color: var(--dim); background: var(--bg); box-shadow: none; }
 .vessel-svg-wrap { width: 60px; height: 50px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; }
 .vessel-close {
   width: 100%; background: none; border: 1px solid var(--dim);
@@ -664,23 +666,23 @@ header p {
       <div class="vessel-grid">
         <div class="vessel-choice" data-ship="california" onclick="selectShipModal(this)">
           <div class="vessel-svg-wrap" id="svgwrap-california"></div>
-          CALIFORNIA
+          <span class="vessel-label">CALIFORNIA</span>
         </div>
         <div class="vessel-choice" data-ship="chimera" onclick="selectShipModal(this)">
           <div class="vessel-svg-wrap" id="svgwrap-chimera"></div>
-          CHIMERA
+          <span class="vessel-label">CHIMERA</span>
         </div>
         <div class="vessel-choice" data-ship="dorito" onclick="selectShipModal(this)">
           <div class="vessel-svg-wrap" id="svgwrap-dorito"></div>
-          DORITO
+          <span class="vessel-label">DORITO</span>
         </div>
         <div class="vessel-choice" data-ship="disco" onclick="selectShipModal(this)">
           <div class="vessel-svg-wrap" id="svgwrap-disco"></div>
-          DISCO
+          <span class="vessel-label">DISCO</span>
         </div>
         <div class="vessel-choice active" data-ship="random" onclick="selectShipModal(this)" id="vessel-random">
           <div class="vessel-svg-wrap" id="svgwrap-random"></div>
-          UNDEADABLE
+          <span class="vessel-label">🔒 500B GPL</span>
         </div>
       </div>
       <button class="vessel-close" onclick="document.getElementById('vessel-modal').classList.remove('open')">CLOSE</button>
@@ -739,6 +741,7 @@ let myName    = '';
 let fleet     = {}; // name -> {hp, maxHp, killStreak, isCloaked}
 let borgHp    = 0;
 let borgActive = false;
+let myUnlocked = false;
 const cooldowns = {}; // abilityKey -> expiry timestamp
 
 
@@ -807,10 +810,19 @@ function handleMsg(msg) {
             const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
             if (parsed.type === 'DSR_STATE' && parsed.stateJson) {
                 const state = typeof parsed.stateJson === 'string' ? JSON.parse(parsed.stateJson) : parsed.stateJson;
-                if (state.fleet) { fleet = state.fleet; renderFleet(); }
+                if (state.fleet) {
+                    fleet = state.fleet;
+                    // Check if logged-in viewer has unlock
+                    if (myName) {
+                        const myKey = Object.keys(fleet).find(k => k.toLowerCase() === myName.toLowerCase());
+                        if (myKey) myUnlocked = fleet[myKey].customShipUnlocked || false;
+                    }
+                    renderFleet();
+                }
                 borgActive = state.borgActive || false;
                 borgHp     = state.borgHp    || 0;
                 updateBossAlert();
+                updateUndeadableGate();
             }
         } catch(e) {}
         return;
@@ -822,10 +834,19 @@ function handleMsg(msg) {
         if (args && args.stateJson) {
             try {
                 const state = JSON.parse(args.stateJson);
-                if (state.fleet) { fleet = state.fleet; renderFleet(); }
+                if (state.fleet) {
+                    fleet = state.fleet;
+                    // Check if logged-in viewer has unlock
+                    if (myName) {
+                        const myKey = Object.keys(fleet).find(k => k.toLowerCase() === myName.toLowerCase());
+                        if (myKey) myUnlocked = fleet[myKey].customShipUnlocked || false;
+                    }
+                    renderFleet();
+                }
                 borgActive = state.borgActive || false;
                 borgHp     = state.borgHp    || 0;
                 updateBossAlert();
+                updateUndeadableGate();
             } catch(e) { log('Parse err: ' + e.message, 'err'); }
         }
         return;
@@ -1072,6 +1093,19 @@ function initVesselSVGs() {
     updateCurrentVesselDisplay();
 }
 
+function updateUndeadableGate() {
+    const el = document.querySelector('.vessel-choice[data-ship="random"]');
+    if (!el) return;
+    const label = el.querySelector('.vessel-label');
+    if (myUnlocked) {
+        el.classList.remove('locked');
+        if (label) label.innerText = 'UNDEADABLE';
+    } else {
+        el.classList.add('locked');
+        if (label) label.innerHTML = '🔒 500B GPL';
+    }
+}
+
 function openVesselModal() {
     document.getElementById('vessel-modal').classList.add('open');
 }
@@ -1082,6 +1116,7 @@ function closeVesselModal(e) {
 }
 
 function selectShipModal(el) {
+    if (el.classList.contains('locked')) return;
     document.querySelectorAll('.vessel-choice').forEach(e => e.classList.remove('active'));
     el.classList.add('active');
     selectedShip = el.dataset.ship;

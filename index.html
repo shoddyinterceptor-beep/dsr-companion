@@ -917,10 +917,11 @@ function useAbility(key) {
 
 function useBossAbility(key) {
     if (isOnCooldown(key)) return;
-    // Pass 'BORG CUBE' as target — overlay handles routing to Borg
-    if (!sendCommand(key.toUpperCase(), 'BORG CUBE')) return;
+    // ram sends empty target, fire/torp send own name — overlay self-target check routes to Borg
+    const input0 = (key === 'ram') ? '' : myName;
+    if (!sendCommand(key.toUpperCase(), input0)) return;
     startCooldown(key);
-    log(`${key.toUpperCase()} → BORG CUBE`, 'ok');
+    log(key.toUpperCase() + ' → BORG CUBE', 'ok');
 }
 
 function useTargeted(key) {

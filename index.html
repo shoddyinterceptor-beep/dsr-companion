@@ -296,7 +296,7 @@ header p {
   opacity: 0;
   transition: opacity 0.2s;
 }
-.ability-btn.on-cd .cd-overlay { opacity: 1; }
+.ability-btn.on-cd .cd-overlay, .fire-btn.on-cd .cd-overlay, .boss-btn.on-cd .cd-overlay { opacity: 1; }
 
 /* ── Target selector ── */
 .target-row {
@@ -588,14 +588,17 @@ header p {
     <div class="boss-hp-wrap"><div class="boss-hp-fill" id="boss-hp-bar" style="width:100%"></div></div>
     <div class="boss-hp-text" id="boss-hp-text">1,000,000 HP</div>
     <div class="boss-actions">
-      <button class="boss-btn" id="btn-boss-ram" onclick="useBossAbility('ram')">
+      <button class="boss-btn" id="btn-boss-ram" onclick="useBossAbility('ram')" style="position:relative;overflow:hidden">
         <span class="bb-icon">⚡</span>RAM CUBE
+        <div class="cd-overlay" id="cd-boss-ram" style="font-size:12px"></div>
       </button>
-      <button class="boss-btn" id="btn-boss-torp" onclick="useBossAbility('torp')">
+      <button class="boss-btn" id="btn-boss-torp" onclick="useBossAbility('torp')" style="position:relative;overflow:hidden">
         <span class="bb-icon">🚀</span>TORP CUBE
+        <div class="cd-overlay" id="cd-boss-torp" style="font-size:12px"></div>
       </button>
-      <button class="boss-btn" id="btn-boss-fire" onclick="useBossAbility('fire')">
+      <button class="boss-btn" id="btn-boss-fire" onclick="useBossAbility('fire')" style="position:relative;overflow:hidden">
         <span class="bb-icon">🎯</span>LOCK-ON CUBE
+        <div class="cd-overlay" id="cd-boss-fire" style="font-size:12px"></div>
       </button>
     </div>
   </div>

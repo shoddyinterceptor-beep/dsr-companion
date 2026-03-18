@@ -1135,20 +1135,20 @@ function startCooldown(key) {
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
     const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'] };
-    const cdMap  = { fire:'cd-fire', torp:'cd-torp', ram:'cd-ram', faw:'cd-faw', spread:'cd-spread', heal:'cd-heal', cloak:'cd-cloak' };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
         ids.forEach(id => { const b = document.getElementById(id); if (b) { b.disabled=false; b.classList.remove('on-cd'); } });
-        const cd = document.getElementById(cdMap[key]);
-        if (cd) cd.innerText = '—';
+        const cdIds = Array.isArray(cdMap[key]) ? cdMap[key] : [cdMap[key]];
+        cdIds.forEach(id => { const cd = document.getElementById(id); if (cd) cd.innerText = ''; });
         return;
     }
 
     const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
     ids.forEach(id => { const b = document.getElementById(id); if (b) { b.disabled=true; b.classList.add('on-cd'); } });
-    const cd = document.getElementById(cdMap[key]);
-    if (cd) cd.innerText = remaining + 's';
+    const cdIds = Array.isArray(cdMap[key]) ? cdMap[key] : [cdMap[key]];
+    cdIds.forEach(id => { const cd = document.getElementById(id); if (cd) cd.innerText = remaining + 's'; });
 
     setTimeout(() => tickCooldown(key), 1000);
 }

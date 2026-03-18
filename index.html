@@ -680,7 +680,7 @@ header p {
           <div class="vessel-svg-wrap" id="svgwrap-disco"></div>
           <span class="vessel-label">DISCO</span>
         </div>
-        <div class="vessel-choice active" data-ship="random" onclick="selectShipModal(this)" id="vessel-random">
+        <div class="vessel-choice active" data-ship="undeadable" onclick="selectShipModal(this)" id="vessel-undeadable">
           <div class="vessel-svg-wrap" id="svgwrap-random"></div>
           <span class="vessel-label">🔒 500B GPL</span>
         </div>
@@ -812,10 +812,10 @@ function handleMsg(msg) {
                 const state = typeof parsed.stateJson === 'string' ? JSON.parse(parsed.stateJson) : parsed.stateJson;
                 if (state.fleet) {
                     fleet = state.fleet;
-                    // Check if logged-in viewer has unlock
-                    if (myName) {
+                    // Check if logged-in viewer has unlock — only ever set to true, never back to false
+                    if (myName && !myUnlocked) {
                         const myKey = Object.keys(fleet).find(k => k.toLowerCase() === myName.toLowerCase());
-                        if (myKey) myUnlocked = fleet[myKey].customShipUnlocked || false;
+                        if (myKey && fleet[myKey].customShipUnlocked) myUnlocked = true;
                     }
                     renderFleet();
                 }
@@ -836,10 +836,10 @@ function handleMsg(msg) {
                 const state = JSON.parse(args.stateJson);
                 if (state.fleet) {
                     fleet = state.fleet;
-                    // Check if logged-in viewer has unlock
-                    if (myName) {
+                    // Check if logged-in viewer has unlock — only ever set to true, never back to false
+                    if (myName && !myUnlocked) {
                         const myKey = Object.keys(fleet).find(k => k.toLowerCase() === myName.toLowerCase());
-                        if (myKey) myUnlocked = fleet[myKey].customShipUnlocked || false;
+                        if (myKey && fleet[myKey].customShipUnlocked) myUnlocked = true;
                     }
                     renderFleet();
                 }
@@ -1080,7 +1080,7 @@ function getUndeadableSVG() {
 }
 
 // ── Vessel modal ──────────────────────────────────────────────────────────
-let selectedShip = 'random';
+let selectedShip = 'undeadable';
 
 function initVesselSVGs() {
     const COLOR = 'hsl(195,100%,65%)';
@@ -1140,14 +1140,14 @@ function updateCurrentVesselDisplay() {
         chimera:    getBoPSVG(COLOR),
         dorito:     getArrowSVG(COLOR),
         disco:      getDiscoConnieSVG(COLOR),
-        random:     getUndeadableSVG(),
+        undeadable: getUndeadableSVG(),
     };
     const nameMap = {
         california: 'USS CALIFORNIA',
         chimera:    'IKS CHIMERA',
         dorito:     'USS ARROW',
         disco:      'USS DISCO',
-        random:     'USS UND34DABL3',
+        undeadable: 'USS UND34DABL3',
     };
     wrap.innerHTML  = svgMap[selectedShip]  || svgMap.random;
     label.innerText = nameMap[selectedShip] || 'SELECT YOUR VESSEL';

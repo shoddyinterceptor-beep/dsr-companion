@@ -672,6 +672,10 @@ header p {
           <div class="vessel-svg-wrap" id="svgwrap-chimera"></div>
           <span class="vessel-label">CHIMERA</span>
         </div>
+        <div class="vessel-choice" data-ship="bop" onclick="selectShipModal(this)">
+          <div class="vessel-svg-wrap" id="svgwrap-bop"></div>
+          <span class="vessel-label">BIRD OF PREY</span>
+        </div>
         <div class="vessel-choice" data-ship="dorito" onclick="selectShipModal(this)">
           <div class="vessel-svg-wrap" id="svgwrap-dorito"></div>
           <span class="vessel-label">DORITO</span>
@@ -956,7 +960,7 @@ function getFederationSVG(color) {
         <circle cx="70" cy="50" r="7" fill="rgba(255,255,255,0.2)" stroke="${color}" stroke-width="1"/>
     </svg>`;
 }
-function getBoPSVG(color) {
+function getChimeraSVG(color) {
     const dim  = color.replace('65%', '22%');
     const mid  = color.replace('65%', '45%');
     const glow = color.replace('65%', '80%');
@@ -995,6 +999,10 @@ function getBoPSVG(color) {
         <ellipse cx="70" cy="48" rx="3" ry="5" fill="${glow}" opacity="0.7"/>
     </svg>`;
 }
+function getBoPSVG() {
+    return `<img src="BoP.png" style="width:100%;height:100%;object-fit:contain">`;
+}
+
 function getArrowSVG(color) {
     const dim  = color.replace('65%', '22%');
     const mid  = color.replace('65%', '45%');
@@ -1086,7 +1094,8 @@ let selectedShip = 'undeadable';
 function initVesselSVGs() {
     const COLOR = 'hsl(195,100%,65%)';
     document.getElementById('svgwrap-california').innerHTML = getFederationSVG(COLOR);
-    document.getElementById('svgwrap-chimera').innerHTML    = getBoPSVG(COLOR);
+    document.getElementById('svgwrap-chimera').innerHTML    = getChimeraSVG(COLOR);
+    document.getElementById('svgwrap-bop').innerHTML         = getBoPSVG();
     document.getElementById('svgwrap-dorito').innerHTML     = getArrowSVG(COLOR);
     document.getElementById('svgwrap-disco').innerHTML      = getDiscoConnieSVG(COLOR);
     document.getElementById('svgwrap-random').innerHTML     = getUndeadableSVG();
@@ -1138,7 +1147,8 @@ function updateCurrentVesselDisplay() {
     const label = document.getElementById('vessel-current-name');
     const svgMap = {
         california: getFederationSVG(COLOR),
-        chimera:    getBoPSVG(COLOR),
+        chimera:    getChimeraSVG(COLOR),
+        bop:        getBoPSVG(),
         dorito:     getArrowSVG(COLOR),
         disco:      getDiscoConnieSVG(COLOR),
         undeadable: getUndeadableSVG(),
@@ -1146,6 +1156,7 @@ function updateCurrentVesselDisplay() {
     const nameMap = {
         california: 'USS CALIFORNIA',
         chimera:    'IKS CHIMERA',
+        bop:        'BIRD OF PREY',
         dorito:     'USS ARROW',
         disco:      'USS DISCO',
         undeadable: 'USS UND34DABL3',

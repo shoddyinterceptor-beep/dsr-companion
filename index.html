@@ -684,6 +684,10 @@ header p {
           <div class="vessel-svg-wrap" id="svgwrap-disco"></div>
           <span class="vessel-label">DISCO</span>
         </div>
+        <div class="vessel-choice" data-ship="destroyer" onclick="selectShipModal(this)">
+          <div class="vessel-svg-wrap" id="svgwrap-destroyer"></div>
+          <span class="vessel-label">DESTROYER</span>
+        </div>
         <div class="vessel-choice active" data-ship="undeadable" onclick="selectShipModal(this)" id="vessel-undeadable">
           <div class="vessel-svg-wrap" id="svgwrap-random"></div>
           <span class="vessel-label">🔒 500B GPL</span>
@@ -1021,6 +1025,36 @@ function getBoPSVG(color) {
     </svg>`;
 }
 
+function getDestroyerSVG(color) {
+    color = color || 'hsl(140,80%,55%)';
+    const dim  = color.replace('65%', '18%').replace('55%', '18%');
+    const mid  = color.replace('65%', '35%').replace('55%', '35%');
+    const glow = color.replace('65%', '70%').replace('55%', '70%');
+    // Top-down Romulan Dinae: large crescent wings, narrow central hull, pointed bow right
+    return `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 6px ${color})">
+        <!-- Top crescent wing -->
+        <path d="M30 48 Q20 10 60 8 Q80 8 85 22 Q60 20 50 48 Z"
+              fill="${mid}" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>
+        <!-- Bottom crescent wing -->
+        <path d="M30 52 Q20 90 60 92 Q80 92 85 78 Q60 80 50 52 Z"
+              fill="${mid}" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>
+        <!-- Wing tip accents — green glow -->
+        <ellipse cx="62" cy="10" rx="8" ry="3" fill="${glow}" opacity="0.7"/>
+        <ellipse cx="62" cy="90" rx="8" ry="3" fill="${glow}" opacity="0.7"/>
+        <!-- Central hull -->
+        <path d="M20 48 L50 44 L90 48 L50 56 L20 52 Z"
+              fill="${mid}" stroke="${color}" stroke-width="1.5"/>
+        <!-- Pointed bow extending right -->
+        <path d="M90 44 L115 50 L90 56 Z"
+              fill="${dim}" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- Engine core -->
+        <ellipse cx="48" cy="50" rx="10" ry="6" fill="${glow}" opacity="0.35"/>
+        <ellipse cx="48" cy="50" rx="5" ry="3" fill="${glow}" opacity="0.6"/>
+        <!-- Hull detail line -->
+        <line x1="30" y1="50" x2="88" y2="50" stroke="${color}" stroke-width="0.8" opacity="0.4"/>
+    </svg>`;
+}
+
 function getArrowSVG(color) {
     const dim  = color.replace('65%', '22%');
     const mid  = color.replace('65%', '45%');
@@ -1169,6 +1203,7 @@ function updateCurrentVesselDisplay() {
         bop:        getBoPSVG(COLOR),
         dorito:     getArrowSVG(COLOR),
         disco:      getDiscoConnieSVG(COLOR),
+        destroyer:  getDestroyerSVG(COLOR),
         undeadable: getUndeadableSVG(),
     };
     const nameMap = {
@@ -1177,6 +1212,7 @@ function updateCurrentVesselDisplay() {
         bop:        'BIRD OF PREY',
         dorito:     'USS ARROW',
         disco:      'USS DISCO',
+        destroyer:  'ROMULAN DESTROYER',
         undeadable: 'USS UND34DABL3',
     };
     wrap.innerHTML  = svgMap[selectedShip]  || svgMap.random;

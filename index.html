@@ -999,8 +999,26 @@ function getChimeraSVG(color) {
         <ellipse cx="70" cy="48" rx="3" ry="5" fill="${glow}" opacity="0.7"/>
     </svg>`;
 }
-function getBoPSVG() {
-    return `<img src="BoP.png" style="width:100%;height:100%;object-fit:contain">`;
+function getBoPSVG(color) {
+    color = color || 'hsl(195,100%,65%)';
+    const dim  = color.replace('65%', '20%');
+    const mid  = color.replace('65%', '38%');
+    const glow = color.replace('65%', '75%');
+    return `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 6px ${color})">
+        <path d="M52 50 L18 18 L30 42 L28 50 L30 58 L18 82 L52 50 Z" fill="${dim}" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>
+        <rect x="10" y="12" width="16" height="7" rx="3" fill="${dim}" stroke="${color}" stroke-width="1.5"/>
+        <rect x="10" y="81" width="16" height="7" rx="3" fill="${dim}" stroke="${color}" stroke-width="1.5"/>
+        <ellipse cx="52" cy="50" rx="16" ry="12" fill="${mid}" stroke="${color}" stroke-width="2"/>
+        <ellipse cx="52" cy="50" rx="8" ry="6" fill="${glow}" opacity="0.4"/>
+        <ellipse cx="52" cy="50" rx="4" ry="3" fill="#cc1122" opacity="0.8"/>
+        <rect x="62" y="47" width="30" height="6" rx="2" fill="${mid}" stroke="${color}" stroke-width="1.5"/>
+        <ellipse cx="100" cy="50" rx="10" ry="8" fill="${mid}" stroke="${color}" stroke-width="2"/>
+        <ellipse cx="100" cy="50" rx="5" ry="4" fill="${glow}" opacity="0.5"/>
+        <line x1="30" y1="35" x2="48" y2="46" stroke="${color}" stroke-width="0.8" opacity="0.5"/>
+        <line x1="30" y1="65" x2="48" y2="54" stroke="${color}" stroke-width="0.8" opacity="0.5"/>
+        <circle cx="14" cy="15" r="2" fill="#cc1122" opacity="0.9"/>
+        <circle cx="14" cy="85" r="2" fill="#cc1122" opacity="0.9"/>
+    </svg>`;
 }
 
 function getArrowSVG(color) {
@@ -1095,7 +1113,7 @@ function initVesselSVGs() {
     const COLOR = 'hsl(195,100%,65%)';
     document.getElementById('svgwrap-california').innerHTML = getFederationSVG(COLOR);
     document.getElementById('svgwrap-chimera').innerHTML    = getChimeraSVG(COLOR);
-    document.getElementById('svgwrap-bop').innerHTML         = getBoPSVG();
+    document.getElementById('svgwrap-bop').innerHTML         = getBoPSVG(COLOR);
     document.getElementById('svgwrap-dorito').innerHTML     = getArrowSVG(COLOR);
     document.getElementById('svgwrap-disco').innerHTML      = getDiscoConnieSVG(COLOR);
     document.getElementById('svgwrap-random').innerHTML     = getUndeadableSVG();
@@ -1148,7 +1166,7 @@ function updateCurrentVesselDisplay() {
     const svgMap = {
         california: getFederationSVG(COLOR),
         chimera:    getChimeraSVG(COLOR),
-        bop:        getBoPSVG(),
+        bop:        getBoPSVG(COLOR),
         dorito:     getArrowSVG(COLOR),
         disco:      getDiscoConnieSVG(COLOR),
         undeadable: getUndeadableSVG(),

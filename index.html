@@ -689,7 +689,7 @@ header p {
           <span class="vessel-label">DINAES DESTROYER</span>
         </div>
         <div class="vessel-choice active" data-ship="undeadable" onclick="selectShipModal(this)" id="vessel-undeadable">
-          <div class="vessel-svg-wrap" id="svgwrap-random"></div>
+          <div class="vessel-svg-wrap" id="svgwrap-undeadable"></div>
           <span class="vessel-label">🔒 500B GPL</span>
         </div>
       </div>
@@ -1150,10 +1150,11 @@ function initVesselSVGs() {
     const COLOR = 'hsl(195,100%,65%)';
     document.getElementById('svgwrap-california').innerHTML = getFederationSVG(COLOR);
     document.getElementById('svgwrap-chimera').innerHTML    = getChimeraSVG(COLOR);
-    document.getElementById('svgwrap-bop').innerHTML         = getBoPSVG(COLOR);
+    document.getElementById('svgwrap-bop').innerHTML        = getBoPSVG();
     document.getElementById('svgwrap-dorito').innerHTML     = getArrowSVG(COLOR);
     document.getElementById('svgwrap-disco').innerHTML      = getDiscoConnieSVG(COLOR);
-    document.getElementById('svgwrap-random').innerHTML     = getUndeadableSVG();
+    document.getElementById('svgwrap-destroyer').innerHTML  = getDestroyerSVG(COLOR);
+    document.getElementById('svgwrap-undeadable').innerHTML = getUndeadableSVG();
     // Set initial current vessel display
     updateCurrentVesselDisplay();
 }

@@ -1097,6 +1097,11 @@ function updateUndeadableGate() {
     const el = document.querySelector('.vessel-choice[data-ship="random"]');
     if (!el) return;
     const label = el.querySelector('.vessel-label');
+    // Debug: log fleet key lookup
+    if (myName) {
+        const myKey = Object.keys(fleet).find(k => k.toLowerCase() === myName.toLowerCase());
+        log('[DBG] myName=' + myName + ' myKey=' + myKey + ' unlock=' + (myKey ? fleet[myKey].customShipUnlocked : 'NO KEY') + ' myUnlocked=' + myUnlocked, '');
+    }
     if (myUnlocked) {
         el.classList.remove('locked');
         if (label) label.innerText = 'UNDEADABLE';

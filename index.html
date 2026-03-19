@@ -1395,6 +1395,26 @@ function updateDeadState() {
     // Always keep respawn enabled
     const respawn = document.getElementById('btn-respawn');
     if (respawn) { respawn.disabled = false; respawn.style.opacity = ''; }
+
+    // Grey out abilities that need targets when no other ships exist and no Borg
+    const otherShips = Object.keys(fleet).filter(k => k.toLowerCase() !== (myName||'').toLowerCase());
+    const hasTargets = otherShips.length > 0 || borgActive;
+    const noTargetBtns = ['btn-spread', 'btn-faw', 'btn-pets', 'btn-cloak'];
+    noTargetBtns.forEach(id => {
+        const b = document.getElementById(id);
+        if (!b) return;
+        if (alive && !hasTargets) {
+            b.style.opacity = '0.35';
+            b.style.pointerEvents = 'none';
+        } else if (alive) {
+            // Only restore if not on cooldown
+            const key = id.replace('btn-','');
+            if (!isOnCooldown(key)) {
+                b.style.opacity = '';
+                b.style.pointerEvents = '';
+            }
+        }
+    });
 }
 
 function renderFleet() {

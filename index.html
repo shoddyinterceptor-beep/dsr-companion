@@ -688,9 +688,17 @@ header p {
           <div class="vessel-svg-wrap" id="svgwrap-destroyer"></div>
           <span class="vessel-label">DINAES DESTROYER</span>
         </div>
-        <div class="vessel-choice active" data-ship="undeadable" onclick="selectShipModal(this)" id="vessel-undeadable">
+        <div class="vessel-choice" data-ship="defiant" onclick="selectShipModal(this)">
+          <div class="vessel-svg-wrap" id="svgwrap-defiant"></div>
+          <span class="vessel-label">USS DEFIANT</span>
+        </div>
+        <div class="vessel-choice active" data-ship="undeadable" onclick="selectShipModal(this)" id="vessel-undeadable" style="position:relative;">
           <div class="vessel-svg-wrap" id="svgwrap-undeadable"></div>
-          <span class="vessel-label">🔒 500B GPL</span>
+          <div id="lock-overlay-undeadable" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+            <div style="font-size:2rem;opacity:0.75;">🔒</div>
+            <div style="font-size:0.7rem;font-weight:900;color:#ffdd00;letter-spacing:1px;margin-top:4px;">500B GPL</div>
+          </div>
+          <span class="vessel-label">UNDEADABLE</span>
         </div>
       </div>
       <button class="vessel-close" onclick="document.getElementById('vessel-modal').classList.remove('open')">CLOSE</button>
@@ -1058,6 +1066,36 @@ function getDestroyerSVG(color) {
         <line x1="56" y1="55" x2="72" y2="84" stroke="${color}" stroke-width="0.8" opacity="0.4"/>
     </svg>`;
 }
+function getDefiantSVG(color) {
+    color = color || 'hsl(200,80%,60%)';
+    const dim  = color.replace('65%', '18%').replace('60%', '18%');
+    const mid  = color.replace('65%', '32%').replace('60%', '32%');
+    const glow = color.replace('65%', '70%').replace('60%', '70%');
+    // USS Defiant: compact wedge hull, two swept angular wing panels, central saucer ring
+    return `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:110px;height:110px;filter:drop-shadow(0 0 6px ${color})">
+        <!-- Main compact wedge hull -->
+        <path d="M15 38 L75 30 L105 50 L75 70 L15 62 Z"
+              fill="${mid}" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
+        <!-- Top swept wing panel -->
+        <path d="M20 38 L55 30 L70 14 L45 18 Z"
+              fill="${dim}" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>
+        <!-- Bottom swept wing panel -->
+        <path d="M20 62 L55 70 L70 86 L45 82 Z"
+              fill="${dim}" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>
+        <!-- Central saucer ring -->
+        <circle cx="52" cy="50" r="14" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.8"/>
+        <circle cx="52" cy="50" r="8"  fill="${mid}" stroke="${color}" stroke-width="1.2"/>
+        <circle cx="52" cy="50" r="4"  fill="${glow}" opacity="0.6"/>
+        <!-- Red accent stripes -->
+        <line x1="22" y1="42" x2="72" y2="36" stroke="#cc1122" stroke-width="2" opacity="0.9"/>
+        <line x1="22" y1="58" x2="72" y2="64" stroke="#cc1122" stroke-width="2" opacity="0.9"/>
+        <!-- Forward bridge notch -->
+        <path d="M95 46 L108 50 L95 54 Z" fill="${glow}" stroke="${color}" stroke-width="1" opacity="0.9"/>
+        <!-- Hull detail -->
+        <line x1="30" y1="50" x2="90" y2="50" stroke="${color}" stroke-width="0.7" opacity="0.35"/>
+    </svg>`;
+}
+
 function getArrowSVG(color) {
     const dim  = color.replace('65%', '22%');
     const mid  = color.replace('65%', '45%');
@@ -1154,26 +1192,22 @@ function initVesselSVGs() {
     document.getElementById('svgwrap-dorito').innerHTML     = getArrowSVG(COLOR);
     document.getElementById('svgwrap-disco').innerHTML      = getDiscoConnieSVG(COLOR);
     document.getElementById('svgwrap-destroyer').innerHTML  = getDestroyerSVG(COLOR);
+    document.getElementById('svgwrap-defiant').innerHTML    = getDefiantSVG(COLOR);
     document.getElementById('svgwrap-undeadable').innerHTML = getUndeadableSVG();
     // Set initial current vessel display
     updateCurrentVesselDisplay();
 }
 
 function updateUndeadableGate() {
-    const el = document.querySelector('.vessel-choice[data-ship="random"]');
+    const el = document.querySelector('.vessel-choice[data-ship="undeadable"]');
     if (!el) return;
-    const label = el.querySelector('.vessel-label');
-    // Debug: log fleet key lookup
-    if (myName) {
-        const myKey = Object.keys(fleet).find(k => k.toLowerCase() === myName.toLowerCase());
-        log('[DBG] myName=' + myName + ' myKey=' + myKey + ' unlock=' + (myKey ? fleet[myKey].customShipUnlocked : 'NO KEY') + ' myUnlocked=' + myUnlocked, '');
-    }
+    const lockOverlay = document.getElementById('lock-overlay-undeadable');
     if (myUnlocked) {
         el.classList.remove('locked');
-        if (label) label.innerText = 'UNDEADABLE';
+        if (lockOverlay) lockOverlay.style.display = 'none';
     } else {
         el.classList.add('locked');
-        if (label) label.innerHTML = '🔒 500B GPL';
+        if (lockOverlay) lockOverlay.style.display = 'flex';
     }
 }
 
@@ -1208,6 +1242,7 @@ function updateCurrentVesselDisplay() {
         dorito:     getArrowSVG(COLOR),
         disco:      getDiscoConnieSVG(COLOR),
         destroyer:  getDestroyerSVG(COLOR),
+        defiant:    getDefiantSVG(COLOR),
         undeadable: getUndeadableSVG(),
     };
     const nameMap = {
@@ -1217,6 +1252,7 @@ function updateCurrentVesselDisplay() {
         dorito:     'USS ARROW',
         disco:      'USS DISCO',
         destroyer:  'ROMULAN DESTROYER',
+        defiant:    'USS DEFIANT',
         undeadable: 'USS UND34DABL3',
     };
     wrap.innerHTML  = svgMap[selectedShip]  || svgMap.random;

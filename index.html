@@ -1348,8 +1348,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];

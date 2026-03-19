@@ -960,6 +960,11 @@ function sendRespawn() {
 // ── Ability handlers ───────────────────────────────────────────────────────
 function useAbility(key) {
     if (isOnCooldown(key)) return;
+    // warp and pets require myName — guard against empty
+    if ((key === 'warp' || key === 'pets') && !myName) {
+        log('Login with Twitch first!', 'err');
+        return;
+    }
     const input0 = (key === 'warp' || key === 'pets') ? myName : undefined;
     if (!sendCommand(key.toUpperCase(), input0)) return;
     startCooldown(key);

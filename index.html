@@ -1448,7 +1448,6 @@ function updateCloakGreying() {
         const target = sel.value;
         if (!target || !fleet[target]) { btn.style.opacity = ''; btn.style.pointerEvents = ''; return; }
         if (fleet[target].isCloaked) {
-            // Check if we have active !fire lock-on on this target
             const myEntry = myName ? fleet[myName] : null;
             const hasLock = myEntry && myEntry.activeLockOn &&
                             myEntry.activeLockOn.toLowerCase() === target.toLowerCase();
@@ -1464,6 +1463,15 @@ function updateCloakGreying() {
             btn.style.pointerEvents = '';
         }
     });
+
+    // Grey out warp if invoker is currently cloaked
+    const warpBtn = document.getElementById('btn-warp');
+    if (warpBtn) {
+        const myEntry = myName ? fleet[myName] : null;
+        const isCloaked = myEntry && myEntry.isCloaked;
+        warpBtn.style.opacity = isCloaked ? '0.35' : '';
+        warpBtn.style.pointerEvents = isCloaked ? 'none' : '';
+    }
 }
 
 function updateMyShip() {

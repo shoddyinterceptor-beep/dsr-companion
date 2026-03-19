@@ -828,7 +828,14 @@ function handleMsg(msg) {
                 const state = typeof parsed.stateJson === 'string' ? JSON.parse(parsed.stateJson) : parsed.stateJson;
                 if (state.fleet) {
                     fleet = state.fleet;
-                    // Check if logged-in viewer has unlock — only ever set to true, never back to false
+                    // Check unlockedViewers list — independent of spawn state, never resets to false
+                    if (myName && !myUnlocked && state.unlockedViewers) {
+                        const lowerName = myName.toLowerCase();
+                        if (state.unlockedViewers.some(u => u.toLowerCase() === lowerName)) {
+                            myUnlocked = true;
+                        }
+                    }
+                    // Also check fleet entry as fallback
                     if (myName && !myUnlocked) {
                         const myKey = Object.keys(fleet).find(k => k.toLowerCase() === myName.toLowerCase());
                         if (myKey && fleet[myKey].customShipUnlocked) myUnlocked = true;
@@ -852,7 +859,14 @@ function handleMsg(msg) {
                 const state = JSON.parse(args.stateJson);
                 if (state.fleet) {
                     fleet = state.fleet;
-                    // Check if logged-in viewer has unlock — only ever set to true, never back to false
+                    // Check unlockedViewers list — independent of spawn state, never resets to false
+                    if (myName && !myUnlocked && state.unlockedViewers) {
+                        const lowerName = myName.toLowerCase();
+                        if (state.unlockedViewers.some(u => u.toLowerCase() === lowerName)) {
+                            myUnlocked = true;
+                        }
+                    }
+                    // Also check fleet entry as fallback
                     if (myName && !myUnlocked) {
                         const myKey = Object.keys(fleet).find(k => k.toLowerCase() === myName.toLowerCase());
                         if (myKey && fleet[myKey].customShipUnlocked) myUnlocked = true;

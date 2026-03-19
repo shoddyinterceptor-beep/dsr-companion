@@ -924,6 +924,8 @@ const ACTION_NAMES = {
     'RAM':    'Ram DSR',
     'SHIP':   'DSR Ship',
     'BORG':   'DSR Spawn Borg',
+    'WARP':   'DSR Warp',
+    'PETS':   'DSR Pets',
 };
 
 function sendCommand(commandType, input0) {
@@ -958,7 +960,8 @@ function sendRespawn() {
 // ── Ability handlers ───────────────────────────────────────────────────────
 function useAbility(key) {
     if (isOnCooldown(key)) return;
-    if (!sendCommand(key.toUpperCase())) return;
+    const input0 = (key === 'warp' || key === 'pets') ? myName : undefined;
+    if (!sendCommand(key.toUpperCase(), input0)) return;
     startCooldown(key);
     log(`${key.toUpperCase()} activated`, 'ok');
 }
@@ -1371,6 +1374,7 @@ function updateDeadState() {
     const alive = Object.keys(fleet).some(k => k.toLowerCase() === myName.toLowerCase());
     const combatBtns = [
         'btn-fire','btn-torp','btn-ram','btn-faw','btn-spread','btn-heal','btn-cloak',
+        'btn-warp','btn-pets',
         'btn-boss-fire','btn-boss-torp','btn-boss-ram'
     ];
     combatBtns.forEach(id => {

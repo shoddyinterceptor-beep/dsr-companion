@@ -650,6 +650,18 @@ header p {
         <span class="btn-cd">your cooldown</span>
         <div class="cd-overlay" id="cd-cloak">—</div>
       </button>
+      <button class="ability-btn info" id="btn-warp" onclick="useAbility('warp')">
+        <span class="btn-icon">⚡</span>
+        <span class="btn-label">WARP</span>
+        <span class="btn-cd">60s cooldown</span>
+        <div class="cd-overlay" id="cd-warp">—</div>
+      </button>
+      <button class="ability-btn safe" id="btn-pets" onclick="useAbility('pets')">
+        <span class="btn-icon">🛸</span>
+        <span class="btn-label">PETS</span>
+        <span class="btn-cd">90s cooldown</span>
+        <div class="cd-overlay" id="cd-pets">—</div>
+      </button>
       <button class="ability-btn safe" id="btn-respawn" onclick="sendRespawn()" style="grid-column:span 2">
         <span class="btn-icon">🔄</span>
         <span class="btn-label">RESPAWN</span>
@@ -744,6 +756,8 @@ const COOLDOWNS_SECONDS = {
     heal:   45,   // !heal   — Heal_DSR action
     cloak:  180,  // !cloak  — CloakDSR action
     ram:    120,  // !ram    — Ram DSR action
+    warp:   60,   // !warp   — DSR Warp action
+    pets:   90,   // !pets   — DSR Pets action
 };
 // ═══════════════════════════════════════════════════════════════════
 // Auto-converts seconds to milliseconds — do not edit below this line

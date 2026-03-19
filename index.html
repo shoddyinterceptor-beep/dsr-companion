@@ -1374,11 +1374,41 @@ function renderFleet() {
             names.filter(n => n.toLowerCase() !== myName.toLowerCase())
                  .map(n => `<option value="${n}" ${n===cur?'selected':''}>${n}${fleet[n]?.killStreak>=3?' 🔥':''}</option>`)
                  .join('');
+        sel.onchange = updateCloakGreying;
     });
 
     // Update my ship panel
     updateMyShip();
     updateDeadState();
+    updateCloakGreying();
+}
+
+function updateCloakGreying() {
+    // Grey out !torp and !ram if selected target is cloaked
+    // UNLESS the viewer has an active !fire lock-on on that cloaked target
+    ['torp', 'ram'].forEach(key => {
+        const sel = document.getElementById(`${key}-target`);
+        const btn = document.getElementById(`btn-${key}`);
+        if (!sel || !btn) return;
+        const target = sel.value;
+        if (!target || !fleet[target]) { btn.style.opacity = ''; btn.style.pointerEvents = ''; return; }
+        if (fleet[target].isCloaked) {
+            // Check if we have active !fire lock-on on this target
+            const myEntry = myName ? fleet[myName] : null;
+            const hasLock = myEntry && myEntry.activeLockOn &&
+                            myEntry.activeLockOn.toLowerCase() === target.toLowerCase();
+            if (!hasLock) {
+                btn.style.opacity = '0.35';
+                btn.style.pointerEvents = 'none';
+            } else {
+                btn.style.opacity = '';
+                btn.style.pointerEvents = '';
+            }
+        } else {
+            btn.style.opacity = '';
+            btn.style.pointerEvents = '';
+        }
+    });
 }
 
 function updateMyShip() {

@@ -574,7 +574,9 @@ header p {
 
   /* Incoming torp banner */
   #incoming-banner {
-    display: none;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
     padding: 8px 12px;
     border-radius: 4px;
     font-family: 'Orbitron', monospace;
@@ -583,6 +585,8 @@ header p {
     text-align: center;
     letter-spacing: 1px;
     margin-bottom: 6px;
+    transition: opacity 0.15s;
+    min-height: 38px;
   }
   .incoming-player { background: rgba(180,0,0,0.9); border: 2px solid #ff2222; color: white; }
   .incoming-borg   { background: rgba(0,30,20,0.95); border: 2px solid #00ff41; color: #00ff41; }
@@ -1590,19 +1594,22 @@ function updateIncomingTorp() {
     const banner = document.getElementById('incoming-banner');
     if (!banner || !myName) return;
     const myEntry = getMyFleetEntry();
-    if (!myEntry) { banner.style.display = 'none'; return; }
+    const hide = () => { banner.style.visibility = 'hidden'; banner.style.opacity = '0'; };
+    if (!myEntry) { hide(); return; }
     if (myEntry.incomingBorgTorp) {
         banner.className = 'incoming-borg';
         banner.innerText = '☢️ PLASMA INCOMING!!';
-        banner.style.display = 'block';
+        banner.style.visibility = 'visible';
+        banner.style.opacity = '1';
         clearTimeout(banner._t);
-        banner._t = setTimeout(() => { banner.style.display = 'none'; }, 3000);
+        banner._t = setTimeout(hide, 3000);
     } else if (myEntry.incomingTorp) {
         banner.className = 'incoming-player';
         banner.innerText = '⚠️ INCOMING!!';
-        banner.style.display = 'block';
+        banner.style.visibility = 'visible';
+        banner.style.opacity = '1';
         clearTimeout(banner._t);
-        banner._t = setTimeout(() => { banner.style.display = 'none'; }, 3000);
+        banner._t = setTimeout(hide, 3000);
     }
 }
 

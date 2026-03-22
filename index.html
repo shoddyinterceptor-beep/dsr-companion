@@ -733,13 +733,13 @@ header p {
         <span class="btn-cd">90s cooldown</span>
         <div class="cd-overlay" id="cd-pets">—</div>
       </button>
-      <button class="ability-btn special" id="btn-fleet" onclick="useAbility('fleet')" style="display:none;grid-column:span 2;position:relative;overflow:hidden;">
+      <button class="ability-btn special" id="btn-fleet" onclick="useAbility('fleet')" style="display:none;position:relative;overflow:hidden;">
         <span class="btn-icon">⚡</span>
         <span class="btn-label">FLEET</span>
         <span class="btn-cd">2min cd</span>
         <div class="cd-overlay" id="cd-fleet">—</div>
       </button>
-      <button class="ability-btn safe" id="btn-respawn" onclick="sendRespawn()" style="grid-column:span 3">
+      <button class="ability-btn safe" id="btn-respawn" onclick="sendRespawn()" style="grid-column:span 2">
         <span class="btn-icon">🔄</span>
         <span class="btn-label">RESPAWN</span>
         <span class="btn-cd">spawns your ship in the arena</span>
@@ -1697,13 +1697,10 @@ function updateBossAlert() {
     // Show fleet row and hide normal respawn during boss, reverse on boss end
     const fleetBtn   = document.getElementById('btn-fleet');
     const respawnBtn = document.getElementById('btn-respawn');
-    if (fleetBtn) {
-        fleetBtn.style.display      = borgActive ? 'block' : 'none';
-        fleetBtn.style.gridColumn   = borgActive ? 'span 2' : 'span 2';
-    }
-    if (respawnBtn) {
-        respawnBtn.style.gridColumn = borgActive ? 'span 1' : 'span 3';
-    }
+    // Boss: PETS | FLEET | RESPAWN (each 1 col)
+    // Normal: PETS | RESPAWN (span 2)
+    if (fleetBtn)   fleetBtn.style.display        = borgActive ? 'block' : 'none';
+    if (respawnBtn) respawnBtn.style.gridColumn    = borgActive ? 'span 1' : 'span 2';
     if (!borgActive) return;
     const pct = Math.max(0, borgHp / 1000000 * 100);
     document.getElementById('boss-hp-bar').style.width = pct + '%';

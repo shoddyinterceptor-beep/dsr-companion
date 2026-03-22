@@ -532,6 +532,33 @@ header p {
 }
 .boss-btn:hover { background: var(--green); color: black; }
 .boss-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Lock-on indicator on commander panel */
+  @keyframes lockon-pulse-player {
+    0%,100% { box-shadow: 0 0 0 2px #ff2222, 0 0 12px #ff2222; border-color: #ff2222; }
+    50%      { box-shadow: 0 0 0 4px #ff6666, 0 0 24px #ff4444; border-color: #ff6666; }
+  }
+  @keyframes lockon-pulse-borg {
+    0%,100% { box-shadow: 0 0 0 2px #00ff41, 0 0 12px #00ff41; border-color: #00ff41; }
+    50%      { box-shadow: 0 0 0 4px #00ff88, 0 0 24px #00ff41; border-color: #00ff88; }
+  }
+  .lockon-player { animation: lockon-pulse-player 0.5s ease-in-out infinite; border-radius: 6px; }
+  .lockon-borg   { animation: lockon-pulse-borg   0.5s ease-in-out infinite; border-radius: 6px; }
+
+  /* Incoming torp banner */
+  #incoming-banner {
+    display: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .incoming-player { background: rgba(180,0,0,0.9); border: 2px solid #ff2222; color: white; }
+  .incoming-borg   { background: rgba(0,30,20,0.95); border: 2px solid #00ff41; color: #00ff41; }
 </style>
 </head>
 <body>
@@ -620,6 +647,7 @@ header p {
     </div>
   </div>
 
+  <div id="incoming-banner"></div>
   <!-- Targeted abilities -->
   <div class="panel">
     <div class="panel-title">▸ TARGETED WEAPONS</div>
@@ -689,7 +717,19 @@ header p {
         <span class="btn-cd">90s cooldown</span>
         <div class="cd-overlay" id="cd-pets">—</div>
       </button>
-      <button class="ability-btn safe" id="btn-respawn" onclick="sendRespawn()" style="grid-column:span 2">
+      <div id="fleet-row" style="display:none;gap:6px;grid-column:span 3;">
+        <button class="ability-btn special" id="btn-fleet" onclick="useAbility('fleet')" style="flex:1;position:relative;overflow:hidden;">
+          <span class="btn-icon">⚡</span>
+          <span class="btn-label">FLEET</span>
+          <span class="btn-cd">2min cd</span>
+          <div class="cd-overlay" id="cd-fleet">—</div>
+        </button>
+        <button class="ability-btn safe" onclick="sendRespawn()" style="flex:1;">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-label">RESPAWN</span>
+        </button>
+      </div>
+      <button class="ability-btn safe" id="btn-respawn" onclick="sendRespawn()" style="grid-column:span 3">
         <span class="btn-icon">🔄</span>
         <span class="btn-label">RESPAWN</span>
         <span class="btn-cd">spawns your ship in the arena</span>
@@ -780,6 +820,7 @@ const COOLDOWNS_SECONDS = {
     warp:   60,   // !warp   — DSR Warp action
     pets:   90,   // !pets   — DSR Pets action
     scatter: 45,  // !scatter — DSR Scatter action
+    fleet:   120,  // !fleet   — DSR Fleet action (global 2min)
 };
 // ═══════════════════════════════════════════════════════════════════
 // Auto-converts seconds to milliseconds — do not edit below this line
@@ -883,6 +924,14 @@ function handleMsg(msg) {
                     renderFleet();
                 }
                 borgActive = state.borgActive || false;
+                // Sync global fleet cooldown
+                if (state.fleetLastUsed && state.fleetLastUsed > 0) {
+                    const remaining = Math.ceil((state.fleetLastUsed + 120000 - Date.now()) / 1000);
+                    if (remaining > 0 && !isOnCooldown('fleet')) {
+                        cooldowns['fleet'] = state.fleetLastUsed + 120000;
+                        tickCooldown('fleet');
+                    }
+                }
                 borgHp     = state.borgHp    || 0;
                 updateBossAlert();
                 updateUndeadableGate();
@@ -948,6 +997,7 @@ const ACTION_NAMES = {
     'BORG':   'DSR Spawn Borg',
     'WARP':   'DSR Warp',
     'SCATTER': 'DSR Scatter',
+    'FLEET':   'DSR Fleet',
     'PETS':   'DSR Pets',
 };
 
@@ -1376,8 +1426,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -1402,7 +1452,7 @@ function updateDeadState() {
     const alive = Object.keys(fleet).some(k => k.toLowerCase() === myName.toLowerCase());
     const combatBtns = [
         'btn-fire','btn-torp','btn-ram','btn-faw','btn-spread','btn-heal','btn-cloak',
-        'btn-warp','btn-pets','btn-scatter',
+        'btn-warp','btn-pets','btn-scatter','btn-fleet',
         'btn-boss-fire','btn-boss-torp','btn-boss-ram'
     ];
     combatBtns.forEach(id => {
@@ -1484,6 +1534,41 @@ function renderFleet() {
     updateMyShip();
     updateDeadState();
     updateCloakGreying();
+    updateLockOnIndicator();
+    updateIncomingTorp();
+}
+
+function updateLockOnIndicator() {
+    const panel = document.getElementById('identity-section');
+    if (!panel || !myName) return;
+    const myEntry = myName ? fleet[myName] : null;
+    panel.classList.remove('lockon-player', 'lockon-borg');
+    if (!myEntry) return;
+    if (myEntry.borgLockedOnMe) {
+        panel.classList.add('lockon-borg');
+    } else if (myEntry.lockedOnBy && myEntry.lockedOnBy.length > 0) {
+        panel.classList.add('lockon-player');
+    }
+}
+
+function updateIncomingTorp() {
+    const banner = document.getElementById('incoming-banner');
+    if (!banner || !myName) return;
+    const myEntry = myName ? fleet[myName] : null;
+    if (!myEntry) { banner.style.display = 'none'; return; }
+    if (myEntry.incomingBorgTorp) {
+        banner.className = 'incoming-borg';
+        banner.innerText = '☢️ PLASMA INCOMING!!';
+        banner.style.display = 'block';
+        clearTimeout(banner._t);
+        banner._t = setTimeout(() => { banner.style.display = 'none'; }, 3000);
+    } else if (myEntry.incomingTorp) {
+        banner.className = 'incoming-player';
+        banner.innerText = '⚠️ INCOMING!!';
+        banner.style.display = 'block';
+        clearTimeout(banner._t);
+        banner._t = setTimeout(() => { banner.style.display = 'none'; }, 3000);
+    }
 }
 
 function updateCloakGreying() {
@@ -1520,6 +1605,33 @@ function updateCloakGreying() {
         warpBtn.style.opacity = isCloaked ? '0.35' : '';
         warpBtn.style.pointerEvents = isCloaked ? 'none' : '';
     }
+    // Grey out hull repair if invoker is already immune (normal combat only)
+    const healBtn = document.getElementById('btn-heal');
+    if (healBtn) {
+        const myEntry2 = myName ? fleet[myName] : null;
+        const selfImmune = myEntry2 && myEntry2.isImmune && !borgActive;
+        if (selfImmune) {
+            healBtn.style.opacity = '0.35';
+            healBtn.style.pointerEvents = 'none';
+        } else if (!isOnCooldown('heal')) {
+            healBtn.style.opacity = '';
+            healBtn.style.pointerEvents = '';
+        }
+    }
+    // Grey out fire/torp/ram if selected target is immune
+    ['fire','torp','ram'].forEach(key => {
+        const sel = document.getElementById(`${key}-target`);
+        const btn = document.getElementById(`btn-${key}`);
+        if (!sel || !btn) return;
+        const target = sel.value;
+        if (target && fleet[target] && fleet[target].isImmune) {
+            btn.style.opacity = '0.35';
+            btn.style.pointerEvents = 'none';
+        } else if (!isOnCooldown(key)) {
+            btn.style.opacity = '';
+            btn.style.pointerEvents = '';
+        }
+    });
     updateTargetHPBars();
 }
 
@@ -1558,6 +1670,11 @@ function updateMyShip() {
 function updateBossAlert() {
     const el = document.getElementById('boss-alert');
     el.style.display = borgActive ? 'block' : 'none';
+    // Show fleet row and hide normal respawn during boss, reverse on boss end
+    const fleetRow   = document.getElementById('fleet-row');
+    const respawnBtn = document.getElementById('btn-respawn');
+    if (fleetRow)   fleetRow.style.display   = borgActive ? 'flex' : 'none';
+    if (respawnBtn) respawnBtn.style.display  = borgActive ? 'none' : 'block';
     if (!borgActive) return;
     const pct = Math.max(0, borgHp / 1000000 * 100);
     document.getElementById('boss-hp-bar').style.width = pct + '%';

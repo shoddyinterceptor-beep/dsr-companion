@@ -307,22 +307,9 @@ header p {
 }
 .target-select-wrap {
   flex: 1;
-  position: relative;
   min-width: 0;
 }
-.target-hp-bar {
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  border-radius: 3px 0 0 3px;
-  pointer-events: none;
-  z-index: 0;
-  transition: width 0.5s, background 0.5s;
-  opacity: 0.30;
-}
 .target-select-wrap select {
-  position: relative;
-  z-index: 1;
-  background: transparent;
   width: 100%;
 }
 .target-row select {
@@ -638,22 +625,19 @@ header p {
     <div class="panel-title">▸ TARGETED WEAPONS</div>
     <div class="target-row" id="row-fire">
       <div class="target-select-wrap">
-        <div class="target-hp-bar" id="hpbar-fire"></div>
-        <select id="fire-target"><option value="">— SELECT TARGET —</option></select>
+<select id="fire-target"><option value="">— SELECT TARGET —</option></select>
       </div>
       <button class="fire-btn" id="btn-fire" onclick="useTargeted('fire')" style="position:relative;overflow:hidden">🎯 FIRE<div class="cd-overlay" id="cd-fire" style="font-size:14px"></div></button>
     </div>
     <div class="target-row" id="row-torp">
       <div class="target-select-wrap">
-        <div class="target-hp-bar" id="hpbar-torp"></div>
-        <select id="torp-target"><option value="">— SELECT TARGET —</option></select>
+<select id="torp-target"><option value="">— SELECT TARGET —</option></select>
       </div>
       <button class="fire-btn" id="btn-torp" onclick="useTargeted('torp')" style="border-color:var(--orange);color:var(--orange);position:relative;overflow:hidden">🚀 TORP<div class="cd-overlay" id="cd-torp" style="font-size:14px;color:var(--orange)"></div></button>
     </div>
     <div class="target-row" id="row-ram">
       <div class="target-select-wrap">
-        <div class="target-hp-bar" id="hpbar-ram"></div>
-        <select id="ram-target"><option value="">— SELECT TARGET —</option></select>
+<select id="ram-target"><option value="">— SELECT TARGET —</option></select>
       </div>
       <button class="fire-btn" id="btn-ram" onclick="useTargeted('ram')" style="border-color:var(--gold);color:var(--gold);position:relative;overflow:hidden">⚡ RAM<div class="cd-overlay" id="cd-ram" style="font-size:14px;color:var(--gold)"></div></button>
     </div>
@@ -1542,19 +1526,16 @@ function updateCloakGreying() {
 function updateTargetHPBars() {
     ['fire','torp','ram'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
-        const bar = document.getElementById(`hpbar-${key}`);
-        if (!sel || !bar) return;
+        if (!sel) return;
         const target = sel.value;
         if (!target || !fleet[target]) {
-            bar.style.width = '0%';
-            bar.style.background = 'transparent';
+            sel.style.background = 'var(--bg)';
             return;
         }
         const s   = fleet[target];
         const pct = s.maxHp > 0 ? Math.max(0, s.hp / s.maxHp * 100) : 0;
-        const col = pct < 25 ? 'var(--red)' : pct < 50 ? 'var(--orange)' : 'var(--green)';
-        bar.style.width  = pct + '%';
-        bar.style.background = col;
+        const col = pct < 25 ? '#cc2222' : pct < 50 ? '#cc7700' : '#117711';
+        sel.style.background = `linear-gradient(to right, ${col} ${pct}%, var(--bg) ${pct}%)`;
     });
 }
 

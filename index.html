@@ -566,25 +566,34 @@ header p {
     <div style="font-size:10px;color:var(--dim);margin-top:8px">Ask your streamer for today's connection URL in chat or Discord.</div>
   </div>
 
-  <!-- Identity -->
-  <div class="panel" id="identity-section">
-    <div class="panel-title">▸ COMMANDER IDENTIFICATION</div>
-    <div id="login-area">
-      <button id="twitch-login-btn" onclick="twitchLogin()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="vertical-align:middle;margin-right:8px"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
-        LOGIN WITH TWITCH
-      </button>
-      <div style="font-size:10px;color:var(--dim);margin-top:8px;text-align:center">Your identity is verified by Twitch — no spoofing possible</div>
-    </div>
-    <div id="logged-in-area" style="display:none">
-      <div style="display:flex;align-items:center;gap:10px">
-        <img id="twitch-avatar" src="" width="36" height="36" style="border-radius:50%;border:2px solid var(--cyan)">
-        <div>
-          <div style="font-family:'Orbitron',monospace;font-size:13px;color:var(--cyan)" id="twitch-display-name">—</div>
-          <div style="font-size:10px;color:var(--dim)">VERIFIED COMMANDER</div>
-        </div>
-        <button onclick="twitchLogout()" style="margin-left:auto;background:none;border:1px solid var(--dim);color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;cursor:pointer;border-radius:3px">LOGOUT</button>
+  <!-- Identity + Vessel row -->
+  <div style="display:flex;gap:8px;align-items:stretch;">
+    <div class="panel" id="identity-section" style="flex:1;min-width:0;">
+      <div class="panel-title">▸ COMMANDER</div>
+      <div id="login-area">
+        <button id="twitch-login-btn" onclick="twitchLogin()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="vertical-align:middle;margin-right:8px"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+          LOGIN WITH TWITCH
+        </button>
+        <div style="font-size:10px;color:var(--dim);margin-top:8px;text-align:center">Verified by Twitch OAuth</div>
       </div>
+      <div id="user-area" style="display:none">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <img id="user-avatar" src="" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--cyan)">
+          <div>
+            <div id="user-name" style="font-family:'Orbitron',monospace;font-size:11px;color:var(--cyan)"></div>
+            <div style="font-size:9px;color:var(--dim)">VERIFIED COMMANDER</div>
+          </div>
+          <button onclick="twitchLogout()" style="margin-left:auto;background:none;border:1px solid var(--dim);color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 6px;cursor:pointer;border-radius:3px">LOGOUT</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="flex:1;min-width:0;">
+      <div class="panel-title">▸ VESSEL</div>
+      <button class="ability-btn info" id="btn-vessel" onclick="openVesselModal()" style="width:100%;padding:8px 4px;">
+        <span class="btn-icon" id="vessel-current-svg" style="display:block;width:50px;height:42px;margin:0 auto 2px"></span>
+        <span class="btn-label" id="vessel-current-name" style="font-size:8px;">SELECT VESSEL</span>
+      </button>
     </div>
   </div>
 
@@ -745,13 +754,7 @@ header p {
     </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-title">▸ VESSEL SELECTION</div>
-    <button class="ability-btn info" id="btn-vessel" onclick="openVesselModal()" style="width:100%;padding:14px">
-      <span class="btn-icon" id="vessel-current-svg" style="display:block;width:60px;height:50px;margin:0 auto 4px"></span>
-      <span class="btn-label" id="vessel-current-name">SELECT YOUR VESSEL</span>
-    </button>
-  </div>
+
 
   <!-- Fleet roster -->
   <div class="panel">
@@ -1593,7 +1596,7 @@ function twitchLogout() {
     sessionStorage.removeItem('twitch_user');
     myName = '';
     document.getElementById('login-area').style.display = 'block';
-    document.getElementById('logged-in-area').style.display = 'none';
+    document.getElementById('user-area').style.display = 'none';
     document.getElementById('my-ship').style.display = 'none';
     log('Logged out', '');
 }
@@ -1638,9 +1641,9 @@ async function handleOAuthCallback() {
 function setTwitchUser(user) {
     myName = user.display_name;
     document.getElementById('login-area').style.display = 'none';
-    document.getElementById('logged-in-area').style.display = 'block';
-    document.getElementById('twitch-display-name').innerText = user.display_name;
-    document.getElementById('twitch-avatar').src = user.profile_image_url;
+    document.getElementById('user-area').style.display = 'block';
+    document.getElementById('user-name').innerText = user.display_name;
+    document.getElementById('user-avatar').src = user.profile_image_url;
     updateMyShip();
 }
 

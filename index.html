@@ -638,6 +638,12 @@ header p {
         <span class="btn-cd">100s cooldown</span>
         <div class="cd-overlay" id="cd-spread">—</div>
       </button>
+      <button class="ability-btn info" id="btn-scatter" onclick="useAbility('scatter')">
+        <span class="btn-icon">🔥</span>
+        <span class="btn-label">SCATTER</span>
+        <span class="btn-cd">45s cooldown</span>
+        <div class="cd-overlay" id="cd-scatter">—</div>
+      </button>
       <button class="ability-btn safe" id="btn-heal" onclick="useAbility('heal')">
         <span class="btn-icon">💚</span>
         <span class="btn-label">HULL REPAIR</span>
@@ -758,6 +764,7 @@ const COOLDOWNS_SECONDS = {
     ram:    120,  // !ram    — Ram DSR action
     warp:   60,   // !warp   — DSR Warp action
     pets:   90,   // !pets   — DSR Pets action
+    scatter: 45,  // !scatter — DSR Scatter action
 };
 // ═══════════════════════════════════════════════════════════════════
 // Auto-converts seconds to milliseconds — do not edit below this line
@@ -925,6 +932,7 @@ const ACTION_NAMES = {
     'SHIP':   'DSR Ship',
     'BORG':   'DSR Spawn Borg',
     'WARP':   'DSR Warp',
+    'SCATTER': 'DSR Scatter',
     'PETS':   'DSR Pets',
 };
 
@@ -1353,8 +1361,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -1379,7 +1387,7 @@ function updateDeadState() {
     const alive = Object.keys(fleet).some(k => k.toLowerCase() === myName.toLowerCase());
     const combatBtns = [
         'btn-fire','btn-torp','btn-ram','btn-faw','btn-spread','btn-heal','btn-cloak',
-        'btn-warp','btn-pets',
+        'btn-warp','btn-pets','btn-scatter',
         'btn-boss-fire','btn-boss-torp','btn-boss-ram'
     ];
     combatBtns.forEach(id => {
@@ -1404,7 +1412,7 @@ function updateDeadState() {
     // Grey out abilities that need targets when no other ships exist and no Borg
     const otherShips = Object.keys(fleet).filter(k => k.toLowerCase() !== (myName||'').toLowerCase());
     const hasTargets = otherShips.length > 0 || borgActive;
-    const noTargetBtns = ['btn-spread', 'btn-faw', 'btn-pets', 'btn-cloak'];
+    const noTargetBtns = ['btn-spread', 'btn-faw', 'btn-pets', 'btn-cloak', 'btn-scatter'];
     noTargetBtns.forEach(id => {
         const b = document.getElementById(id);
         if (!b) return;

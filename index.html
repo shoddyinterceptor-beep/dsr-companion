@@ -533,6 +533,17 @@ header p {
 .boss-btn:hover { background: var(--green); color: black; }
 .boss-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+  /* Vessel current display — force PNG ships to fit */
+  #vessel-current-svg img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+  #vessel-current-svg svg {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
   /* Spinning rainbow respawn indicator */
   @keyframes rainbow-spin {
     0%   { border-color: #ff0000; box-shadow: 0 0 12px #ff0000; }
@@ -625,7 +636,7 @@ header p {
     <div class="panel" style="flex:1;min-width:0;">
       <div class="panel-title">▸ VESSEL</div>
       <button class="ability-btn info" id="btn-vessel" onclick="openVesselModal()" style="width:100%;padding:8px 4px;">
-        <span class="btn-icon" id="vessel-current-svg" style="display:block;width:50px;height:42px;margin:0 auto 2px"></span>
+        <span class="btn-icon" id="vessel-current-svg" style="display:block;width:60px;height:50px;margin:0 auto 2px;overflow:hidden;"></span>
         <span class="btn-label" id="vessel-current-name" style="font-size:8px;">SELECT VESSEL</span>
       </button>
     </div>

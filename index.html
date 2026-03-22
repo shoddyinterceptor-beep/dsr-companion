@@ -533,6 +533,22 @@ header p {
 .boss-btn:hover { background: var(--green); color: black; }
 .boss-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+  /* Spinning rainbow respawn indicator */
+  @keyframes rainbow-spin {
+    0%   { border-color: #ff0000; box-shadow: 0 0 12px #ff0000; }
+    16%  { border-color: #ff8800; box-shadow: 0 0 12px #ff8800; }
+    33%  { border-color: #ffff00; box-shadow: 0 0 12px #ffff00; }
+    50%  { border-color: #00ff00; box-shadow: 0 0 12px #00ff00; }
+    66%  { border-color: #0088ff; box-shadow: 0 0 12px #0088ff; }
+    83%  { border-color: #aa00ff; box-shadow: 0 0 12px #aa00ff; }
+    100% { border-color: #ff0000; box-shadow: 0 0 12px #ff0000; }
+  }
+  .respawn-alert {
+    animation: rainbow-spin 1.2s linear infinite !important;
+    border-width: 3px !important;
+    border-style: solid !important;
+  }
+
   /* Lock-on indicator on commander panel */
   @keyframes lockon-pulse-player {
     0%,100% { box-shadow: 0 0 0 2px #ff2222, 0 0 12px #ff2222; border-color: #ff2222; }
@@ -717,18 +733,12 @@ header p {
         <span class="btn-cd">90s cooldown</span>
         <div class="cd-overlay" id="cd-pets">—</div>
       </button>
-      <div id="fleet-row" style="display:none;gap:6px;grid-column:span 3;">
-        <button class="ability-btn special" id="btn-fleet" onclick="useAbility('fleet')" style="flex:1;position:relative;overflow:hidden;">
-          <span class="btn-icon">⚡</span>
-          <span class="btn-label">FLEET</span>
-          <span class="btn-cd">2min cd</span>
-          <div class="cd-overlay" id="cd-fleet">—</div>
-        </button>
-        <button class="ability-btn safe" onclick="sendRespawn()" style="flex:1;">
-          <span class="btn-icon">🔄</span>
-          <span class="btn-label">RESPAWN</span>
-        </button>
-      </div>
+      <button class="ability-btn special" id="btn-fleet" onclick="useAbility('fleet')" style="display:none;grid-column:span 2;position:relative;overflow:hidden;">
+        <span class="btn-icon">⚡</span>
+        <span class="btn-label">FLEET</span>
+        <span class="btn-cd">2min cd</span>
+        <div class="cd-overlay" id="cd-fleet">—</div>
+      </button>
       <button class="ability-btn safe" id="btn-respawn" onclick="sendRespawn()" style="grid-column:span 3">
         <span class="btn-icon">🔄</span>
         <span class="btn-label">RESPAWN</span>
@@ -1470,9 +1480,17 @@ function updateDeadState() {
             }
         }
     });
-    // Always keep respawn enabled
+    // Always keep respawn enabled — add rainbow alert when dead
     const respawn = document.getElementById('btn-respawn');
-    if (respawn) { respawn.disabled = false; respawn.style.opacity = ''; }
+    if (respawn) {
+        respawn.disabled = false;
+        respawn.style.opacity = '';
+        if (alive) {
+            respawn.classList.remove('respawn-alert');
+        } else {
+            respawn.classList.add('respawn-alert');
+        }
+    }
 
     // Grey out abilities that need targets when no other ships exist and no Borg
     const otherShips = Object.keys(fleet).filter(k => k.toLowerCase() !== (myName||'').toLowerCase());
@@ -1538,10 +1556,16 @@ function renderFleet() {
     updateIncomingTorp();
 }
 
+function getMyFleetEntry() {
+    if (!myName) return null;
+    const key = Object.keys(fleet).find(k => k.toLowerCase() === myName.toLowerCase());
+    return key ? fleet[key] : null;
+}
+
 function updateLockOnIndicator() {
     const panel = document.getElementById('identity-section');
     if (!panel || !myName) return;
-    const myEntry = myName ? fleet[myName] : null;
+    const myEntry = getMyFleetEntry();
     panel.classList.remove('lockon-player', 'lockon-borg');
     if (!myEntry) return;
     if (myEntry.borgLockedOnMe) {
@@ -1554,7 +1578,7 @@ function updateLockOnIndicator() {
 function updateIncomingTorp() {
     const banner = document.getElementById('incoming-banner');
     if (!banner || !myName) return;
-    const myEntry = myName ? fleet[myName] : null;
+    const myEntry = getMyFleetEntry();
     if (!myEntry) { banner.style.display = 'none'; return; }
     if (myEntry.incomingBorgTorp) {
         banner.className = 'incoming-borg';
@@ -1581,7 +1605,7 @@ function updateCloakGreying() {
         const target = sel.value;
         if (!target || !fleet[target]) { btn.style.opacity = ''; btn.style.pointerEvents = ''; return; }
         if (fleet[target].isCloaked) {
-            const myEntry = myName ? fleet[myName] : null;
+            const myEntry = getMyFleetEntry();
             const hasLock = myEntry && myEntry.activeLockOn &&
                             myEntry.activeLockOn.toLowerCase() === target.toLowerCase();
             if (!hasLock) {
@@ -1600,7 +1624,7 @@ function updateCloakGreying() {
     // Grey out warp if invoker is currently cloaked
     const warpBtn = document.getElementById('btn-warp');
     if (warpBtn) {
-        const myEntry = myName ? fleet[myName] : null;
+        const myEntry = getMyFleetEntry();
         const isCloaked = myEntry && myEntry.isCloaked;
         warpBtn.style.opacity = isCloaked ? '0.35' : '';
         warpBtn.style.pointerEvents = isCloaked ? 'none' : '';
@@ -1608,7 +1632,7 @@ function updateCloakGreying() {
     // Grey out hull repair if invoker is already immune (normal combat only)
     const healBtn = document.getElementById('btn-heal');
     if (healBtn) {
-        const myEntry2 = myName ? fleet[myName] : null;
+        const myEntry2 = getMyFleetEntry();
         const selfImmune = myEntry2 && myEntry2.isImmune && !borgActive;
         if (selfImmune) {
             healBtn.style.opacity = '0.35';
@@ -1671,10 +1695,15 @@ function updateBossAlert() {
     const el = document.getElementById('boss-alert');
     el.style.display = borgActive ? 'block' : 'none';
     // Show fleet row and hide normal respawn during boss, reverse on boss end
-    const fleetRow   = document.getElementById('fleet-row');
+    const fleetBtn   = document.getElementById('btn-fleet');
     const respawnBtn = document.getElementById('btn-respawn');
-    if (fleetRow)   fleetRow.style.display   = borgActive ? 'flex' : 'none';
-    if (respawnBtn) respawnBtn.style.display  = borgActive ? 'none' : 'block';
+    if (fleetBtn) {
+        fleetBtn.style.display      = borgActive ? 'block' : 'none';
+        fleetBtn.style.gridColumn   = borgActive ? 'span 2' : 'span 2';
+    }
+    if (respawnBtn) {
+        respawnBtn.style.gridColumn = borgActive ? 'span 1' : 'span 3';
+    }
     if (!borgActive) return;
     const pct = Math.max(0, borgHp / 1000000 * 100);
     document.getElementById('boss-hp-bar').style.width = pct + '%';

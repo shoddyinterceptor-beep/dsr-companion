@@ -304,24 +304,28 @@ header p {
   gap: 8px;
   align-items: stretch;
   margin-bottom: 8px;
+}
+.target-select-wrap {
+  flex: 1;
   position: relative;
+  min-width: 0;
 }
 .target-hp-bar {
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  border-radius: 3px;
+  border-radius: 3px 0 0 3px;
   pointer-events: none;
   z-index: 0;
-  transition: width 0.4s, background 0.4s;
-  opacity: 0.28;
+  transition: width 0.5s, background 0.5s;
+  opacity: 0.30;
 }
-.target-row select {
+.target-select-wrap select {
   position: relative;
   z-index: 1;
   background: transparent;
+  width: 100%;
 }
 .target-row select {
-  flex: 1;
   background: var(--bg);
   border: 1px solid var(--dim);
   border-radius: 3px;
@@ -633,18 +637,24 @@ header p {
   <div class="panel">
     <div class="panel-title">▸ TARGETED WEAPONS</div>
     <div class="target-row" id="row-fire">
-      <div class="target-hp-bar" id="hpbar-fire"></div>
-      <select id="fire-target"><option value="">— SELECT TARGET —</option></select>
+      <div class="target-select-wrap">
+        <div class="target-hp-bar" id="hpbar-fire"></div>
+        <select id="fire-target"><option value="">— SELECT TARGET —</option></select>
+      </div>
       <button class="fire-btn" id="btn-fire" onclick="useTargeted('fire')" style="position:relative;overflow:hidden">🎯 FIRE<div class="cd-overlay" id="cd-fire" style="font-size:14px"></div></button>
     </div>
     <div class="target-row" id="row-torp">
-      <div class="target-hp-bar" id="hpbar-torp"></div>
-      <select id="torp-target"><option value="">— SELECT TARGET —</option></select>
+      <div class="target-select-wrap">
+        <div class="target-hp-bar" id="hpbar-torp"></div>
+        <select id="torp-target"><option value="">— SELECT TARGET —</option></select>
+      </div>
       <button class="fire-btn" id="btn-torp" onclick="useTargeted('torp')" style="border-color:var(--orange);color:var(--orange);position:relative;overflow:hidden">🚀 TORP<div class="cd-overlay" id="cd-torp" style="font-size:14px;color:var(--orange)"></div></button>
     </div>
     <div class="target-row" id="row-ram">
-      <div class="target-hp-bar" id="hpbar-ram"></div>
-      <select id="ram-target"><option value="">— SELECT TARGET —</option></select>
+      <div class="target-select-wrap">
+        <div class="target-hp-bar" id="hpbar-ram"></div>
+        <select id="ram-target"><option value="">— SELECT TARGET —</option></select>
+      </div>
       <button class="fire-btn" id="btn-ram" onclick="useTargeted('ram')" style="border-color:var(--gold);color:var(--gold);position:relative;overflow:hidden">⚡ RAM<div class="cd-overlay" id="cd-ram" style="font-size:14px;color:var(--gold)"></div></button>
     </div>
   </div>

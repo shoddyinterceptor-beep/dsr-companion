@@ -674,8 +674,12 @@ header p {
         <div class="cd-overlay" id="cd-boss-torp" style="font-size:12px"></div>
       </button>
       <button class="boss-btn" id="btn-boss-fire" onclick="useBossAbility('fire')" style="position:relative;overflow:hidden">
-        <span class="bb-icon">🎯</span>LOCK-ON CUBE
+        <span class="bb-icon">🎯</span>LOCK-ON
         <div class="cd-overlay" id="cd-boss-fire" style="font-size:12px"></div>
+      </button>
+      <button class="boss-btn" id="btn-boss-overload" onclick="useBossAbility('overload')" style="position:relative;overflow:hidden;border-color:#ff2222;color:#ff2222;">
+        <span class="bb-icon">⚡</span>OVERLOAD
+        <div class="cd-overlay" id="cd-boss-overload" style="font-size:12px"></div>
       </button>
     </div>
   </div>
@@ -701,6 +705,20 @@ header p {
 <select id="ram-target"><option value="">— SELECT TARGET —</option></select>
       </div>
       <button class="fire-btn" id="btn-ram" onclick="useTargeted('ram')" style="border-color:var(--gold);color:var(--gold);position:relative;overflow:hidden">⚡ RAM<div class="cd-overlay" id="cd-ram" style="font-size:14px;color:var(--gold)"></div></button>
+    </div>
+    <div class="target-row" id="row-overload">
+      <div class="target-select-wrap">
+        <div class="target-hp-bar" id="hpbar-overload"></div>
+        <select id="overload-target"><option value="">— SELECT TARGET —</option></select>
+      </div>
+      <button class="fire-btn" id="btn-overload" onclick="useTargeted('overload')" style="border-color:#ff2222;color:#ff2222;position:relative;overflow:hidden">⚡ OVERLOAD<div class="cd-overlay" id="cd-overload" style="font-size:11px;color:#ff2222"></div></button>
+    </div>
+    <div class="target-row" id="row-tractor">
+      <div class="target-select-wrap">
+        <div class="target-hp-bar" id="hpbar-tractor"></div>
+        <select id="tractor-target"><option value="">— SELECT TARGET —</option></select>
+      </div>
+      <button class="fire-btn" id="btn-tractor" onclick="useTargeted('tractor')" style="border-color:#00aaff;color:#00aaff;position:relative;overflow:hidden">🔵 TRACTOR<div class="cd-overlay" id="cd-tractor" style="font-size:11px;color:#00aaff"></div></button>
     </div>
   </div>
 
@@ -870,6 +888,8 @@ const COOLDOWNS_SECONDS = {
     pets:   90,   // !pets   — DSR Pets action
     scatter: 45,  // !scatter — DSR Scatter action
     fleet:   120,  // !fleet   — DSR Fleet action (global 2min)
+    overload: 90,  // !overload
+    tractor:  90,  // !tractor
 };
 // ═══════════════════════════════════════════════════════════════════
 // Auto-converts seconds to milliseconds — do not edit below this line
@@ -1047,6 +1067,8 @@ const ACTION_NAMES = {
     'WARP':   'DSR Warp',
     'SCATTER': 'DSR Scatter',
     'FLEET':   'DSR Fleet',
+    'OVERLOAD':'DSR Overload',
+    'TRACTOR': 'DSR Tractor',
     'PETS':   'DSR Pets',
 };
 
@@ -1499,8 +1521,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload'], tractor:['btn-tractor'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload'], tractor:['cd-tractor'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -1525,7 +1547,7 @@ function updateDeadState() {
     const alive = Object.keys(fleet).some(k => k.toLowerCase() === myName.toLowerCase());
     const combatBtns = [
         'btn-fire','btn-torp','btn-ram','btn-faw','btn-spread','btn-heal','btn-cloak',
-        'btn-warp','btn-pets','btn-scatter','btn-fleet',
+        'btn-warp','btn-pets','btn-scatter','btn-fleet','btn-overload','btn-tractor',
         'btn-boss-fire','btn-boss-torp','btn-boss-ram'
     ];
     combatBtns.forEach(id => {
@@ -1601,14 +1623,14 @@ function renderFleet() {
     }).join('');
 
     // Update target dropdowns
-    ['fire','torp','ram'].forEach(key => {
+    ['fire','torp','ram','overload','tractor'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
         const cur = sel.value;
         sel.innerHTML = '<option value="">— SELECT TARGET —</option>' +
             names.filter(n => n.toLowerCase() !== myName.toLowerCase())
                  .map(n => `<option value="${n}" ${n===cur?'selected':''}>${n}${fleet[n]?.killStreak>=3?' 🔥':''}</option>`)
                  .join('');
-        sel.onchange = () => { updateCloakGreying(); updateTargetHPBars(); };
+        sel.onchange = () => { updateCloakGreying(); updateTargetHPBars(); updateTractorGreying(); };
     });
 
     // Update my ship panel
@@ -1617,6 +1639,7 @@ function renderFleet() {
     updateCloakGreying();
     updateLockOnIndicator();
     updateIncomingTorp();
+    updateTractorGreying();
 }
 
 function getMyFleetEntry() {
@@ -1659,6 +1682,22 @@ function updateIncomingTorp() {
         clearTimeout(banner._t);
         banner._t = setTimeout(hide, 3000);
     }
+}
+
+function updateTractorGreying() {
+    ['tractor'].forEach(key => {
+        const sel = document.getElementById(`${key}-target`);
+        const btn = document.getElementById(`btn-${key}`);
+        if (!sel || !btn) return;
+        const target = sel.value;
+        if (!target || !fleet[target]) { btn.style.opacity = ''; btn.style.pointerEvents = ''; return; }
+        const blocked = fleet[target].isTractored || fleet[target].tractorLocked;
+        if (blocked && !isOnCooldown(key)) {
+            btn.style.opacity = '0.35'; btn.style.pointerEvents = 'none';
+        } else if (!isOnCooldown(key)) {
+            btn.style.opacity = ''; btn.style.pointerEvents = '';
+        }
+    });
 }
 
 function updateCloakGreying() {
@@ -1709,7 +1748,7 @@ function updateCloakGreying() {
         }
     }
     // Grey out fire/torp/ram if selected target is immune
-    ['fire','torp','ram'].forEach(key => {
+    ['fire','torp','ram','overload','tractor'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
         const btn = document.getElementById(`btn-${key}`);
         if (!sel || !btn) return;
@@ -1726,7 +1765,7 @@ function updateCloakGreying() {
 }
 
 function updateTargetHPBars() {
-    ['fire','torp','ram'].forEach(key => {
+    ['fire','torp','ram','overload','tractor'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
         if (!sel) return;
         const target = sel.value;

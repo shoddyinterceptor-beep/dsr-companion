@@ -808,6 +808,14 @@ header p {
           </div>
           <span class="vessel-label">UNDEADABLE</span>
         </div>
+        <div class="vessel-choice" data-ship="dyson" onclick="selectShipModal(this)">
+          <div class="vessel-svg-wrap" id="svgwrap-dyson"></div>
+          <span class="vessel-label">DYSON DESTROYER</span>
+        </div>
+        <div class="vessel-choice" data-ship="random" onclick="selectShipModal(this)" style="border-color:var(--gold);">
+          <div class="vessel-svg-wrap" style="font-size:36px;display:flex;align-items:center;justify-content:center;height:100%;">🎲🎲</div>
+          <span class="vessel-label" style="color:var(--gold);">RANDOM</span>
+        </div>
       </div>
       <button class="vessel-close" onclick="document.getElementById('vessel-modal').classList.remove('open')">CLOSE</button>
     </div>
@@ -1171,6 +1179,9 @@ function getBoPSVG(color) {
     </svg>`;
 }
 
+function getDysonSVG() {
+    return '<img src="Dyson_Destroyer.png" class="ship-img" style="transform:rotate(0deg);width:100%;height:100%;object-fit:contain">';
+}
 function getDestroyerSVG(color) {
     color = color || 'hsl(140,80%,55%)';
     const dim  = color.replace('65%', '15%').replace('55%', '15%');
@@ -1414,6 +1425,7 @@ function updateCurrentVesselDisplay() {
         defiant:    getDefiantSVG(COLOR),
         galaxy:     getGalaxySVG(COLOR),
         undeadable: getUndeadableSVG(),
+        dyson:      getDysonSVG(),
     };
     const nameMap = {
         california: 'USS CALIFORNIA',
@@ -1425,6 +1437,7 @@ function updateCurrentVesselDisplay() {
         defiant:    'USS DEFIANT',
         galaxy:     'USS GALAXY',
         undeadable: 'USS UND34DABL3',
+        dyson:      'DYSON DESTROYER',
     };
     wrap.innerHTML  = svgMap[selectedShip]  || svgMap.random;
     label.innerText = nameMap[selectedShip] || 'SELECT YOUR VESSEL';

@@ -692,6 +692,14 @@ header p {
   <!-- Targeted abilities -->
   <div class="panel">
     <div class="panel-title">▸ TARGETED WEAPONS</div>
+    <div class="target-row" style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+      <div class="target-select-wrap">
+        <select id="master-target" onchange="syncMasterTarget(this.value)" style="border-color:var(--cyan);color:var(--cyan);font-size:13px;">
+          <option value="">⚡ SYNC ALL TARGETS —</option>
+        </select>
+      </div>
+      <button class="fire-btn" onclick="syncMasterTarget(document.getElementById('master-target').value)" style="border-color:var(--cyan);color:var(--cyan);font-size:9px;letter-spacing:1px;padding:8px 10px;">SET ALL</button>
+    </div>
     <div class="target-row" id="row-fire">
       <div class="target-select-wrap">
 <select id="fire-target"><option value="">— SELECT TARGET —</option></select>
@@ -1637,6 +1645,9 @@ function renderFleet() {
         sel.onchange = () => { updateCloakGreying(); updateTargetHPBars(); updateTractorGreying(); };
     });
 
+    // Update master sync dropdown
+    updateMasterTargetDropdown();
+
     // Update my ship panel
     updateMyShip();
     updateDeadState();
@@ -1766,6 +1777,29 @@ function updateCloakGreying() {
         }
     });
     updateTargetHPBars();
+}
+
+function syncMasterTarget(val) {
+    ['fire','torp','ram','overload','tractor'].forEach(key => {
+        const sel = document.getElementById(`${key}-target`);
+        if (sel) sel.value = val;
+    });
+    updateCloakGreying();
+    updateTargetHPBars();
+}
+
+function updateMasterTargetDropdown() {
+    const master = document.getElementById('master-target');
+    if (!master) return;
+    const prev = master.value;
+    master.innerHTML = '<option value="">⚡ SYNC ALL TARGETS —</option>';
+    Object.keys(fleet).sort().forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        master.appendChild(opt);
+    });
+    if (prev && fleet[prev]) master.value = prev;
 }
 
 function updateTargetHPBars() {

@@ -458,8 +458,8 @@ header p {
 /* ── Boss action buttons ── */
 .boss-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 6px;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 4px;
   margin-top: 10px;
 }
 .boss-btn {
@@ -514,8 +514,8 @@ header p {
 /* Boss specific buttons */
 .boss-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 6px;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 4px;
   margin-top: 10px;
 }
 .boss-btn {
@@ -1548,7 +1548,7 @@ function updateDeadState() {
     const combatBtns = [
         'btn-fire','btn-torp','btn-ram','btn-faw','btn-spread','btn-heal','btn-cloak',
         'btn-warp','btn-pets','btn-scatter','btn-fleet','btn-overload','btn-tractor',
-        'btn-boss-fire','btn-boss-torp','btn-boss-ram'
+        'btn-boss-fire','btn-boss-torp','btn-boss-ram','btn-boss-overload'
     ];
     combatBtns.forEach(id => {
         const b = document.getElementById(id);

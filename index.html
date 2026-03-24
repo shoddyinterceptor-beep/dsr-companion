@@ -458,7 +458,7 @@ header p {
 /* ── Boss action buttons ── */
 .boss-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   gap: 4px;
   margin-top: 10px;
 }
@@ -514,7 +514,7 @@ header p {
 /* Boss specific buttons */
 .boss-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   gap: 4px;
   margin-top: 10px;
 }
@@ -680,6 +680,10 @@ header p {
       <button class="boss-btn" id="btn-boss-overload" onclick="useBossAbility('overload')" style="position:relative;overflow:hidden;border-color:#ff2222;color:#ff2222;">
         <span class="bb-icon">⚡</span>OVERLOAD
         <div class="cd-overlay" id="cd-boss-overload" style="font-size:12px"></div>
+      </button>
+      <button class="boss-btn" id="btn-boss-tractor" onclick="useBossAbility('tractor')" style="position:relative;overflow:hidden;border-color:#00aaff;color:#00aaff;">
+        <span class="bb-icon">🔵</span>TRACTOR
+        <div class="cd-overlay" id="cd-boss-tractor" style="font-size:12px"></div>
       </button>
     </div>
   </div>
@@ -1521,8 +1525,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload'], tractor:['btn-tractor'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload'], tractor:['cd-tractor'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload'], tractor:['btn-tractor','btn-boss-tractor'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload'], tractor:['cd-tractor','cd-boss-tractor'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -1548,7 +1552,7 @@ function updateDeadState() {
     const combatBtns = [
         'btn-fire','btn-torp','btn-ram','btn-faw','btn-spread','btn-heal','btn-cloak',
         'btn-warp','btn-pets','btn-scatter','btn-fleet','btn-overload','btn-tractor',
-        'btn-boss-fire','btn-boss-torp','btn-boss-ram','btn-boss-overload'
+        'btn-boss-fire','btn-boss-torp','btn-boss-ram','btn-boss-overload','btn-boss-tractor'
     ];
     combatBtns.forEach(id => {
         const b = document.getElementById(id);

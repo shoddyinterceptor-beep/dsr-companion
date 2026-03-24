@@ -1793,12 +1793,14 @@ function updateMasterTargetDropdown() {
     if (!master) return;
     const prev = master.value;
     master.innerHTML = '<option value="">⚡ SYNC ALL TARGETS —</option>';
-    Object.keys(fleet).sort().forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = name;
-        master.appendChild(opt);
-    });
+    Object.keys(fleet).sort()
+        .filter(name => name.toLowerCase() !== myName.toLowerCase())
+        .forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            master.appendChild(opt);
+        });
     if (prev && fleet[prev]) master.value = prev;
 }
 

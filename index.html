@@ -1086,6 +1086,7 @@ function handleMsg(msg) {
                 }
                 borgHp     = state.borgHp    || 0;
                 updateBossAlert();
+                updateTeamsState(state);
                 updateUndeadableGate();
             }
         } catch(e) {}

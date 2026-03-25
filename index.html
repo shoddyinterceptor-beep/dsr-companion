@@ -1871,13 +1871,21 @@ function updateCloakGreying() {
         }
     });
 
-    // Grey out warp if invoker is currently cloaked
+    // Grey out warp if invoker is currently cloaked OR tractored
     const warpBtn = document.getElementById('btn-warp');
     if (warpBtn) {
         const myEntry = getMyFleetEntry();
-        const isCloaked = myEntry && myEntry.isCloaked;
-        warpBtn.style.opacity = isCloaked ? '0.35' : '';
-        warpBtn.style.pointerEvents = isCloaked ? 'none' : '';
+        const warpBlocked = myEntry && (myEntry.isCloaked || myEntry.isTractored);
+        warpBtn.style.opacity = warpBlocked ? '0.35' : '';
+        warpBtn.style.pointerEvents = warpBlocked ? 'none' : '';
+    }
+    // Grey out cloak if invoker is currently tractored
+    const cloakBtn = document.getElementById('btn-cloak');
+    if (cloakBtn && !isOnCooldown('cloak')) {
+        const myEntry = getMyFleetEntry();
+        const cloakBlocked = myEntry && myEntry.isTractored;
+        cloakBtn.style.opacity = cloakBlocked ? '0.35' : '';
+        cloakBtn.style.pointerEvents = cloakBlocked ? 'none' : '';
     }
     // Grey out hull repair if invoker is already immune (normal combat only)
     const healBtn = document.getElementById('btn-heal');

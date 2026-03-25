@@ -265,6 +265,13 @@ header p {
 .ability-btn.special { --accent: var(--gold);    }
 .ability-btn.info    { --accent: var(--cyan);    }
 
+/* Teams join popup buttons */
+#btn-join-red:hover  { background: #ff4444 !important; color: white !important; box-shadow: 0 0 16px #ff444488; }
+#btn-join-blue:hover { background: #4488ff !important; color: white !important; box-shadow: 0 0 16px #4488ff88; }
+/* Healteam button — team-colored dynamically via JS */
+#btn-healteam.team-red  { --accent: #ff4444; border-color: #ff4444 !important; }
+#btn-healteam.team-blue { --accent: #4488ff; border-color: #4488ff !important; }
+
 .ability-btn:hover:not(:disabled) { border-color: var(--accent, var(--cyan)); box-shadow: 0 0 12px var(--accent, var(--cyan))44; }
 
 .btn-icon  { font-size: 22px; display: block; margin-bottom: 4px; }
@@ -786,12 +793,40 @@ header p {
         <span class="btn-cd">2min cd</span>
         <div class="cd-overlay" id="cd-fleet">—</div>
       </button>
+      <button class="ability-btn" id="btn-healteam" onclick="useHealTeam()" style="display:none;position:relative;overflow:hidden;border-color:var(--cyan);">
+        <span class="btn-icon">🛡️</span>
+        <span class="btn-label" id="btn-healteam-label">RALLY TEAM</span>
+        <span class="btn-cd">3min cd</span>
+        <div class="cd-overlay" id="cd-healteam">—</div>
+      </button>
       <button class="ability-btn safe" id="btn-respawn" onclick="sendRespawn()" style="grid-column:span 2">
         <span class="btn-icon">🔄</span>
         <span class="btn-label">RESPAWN</span>
         <span class="btn-cd">spawns your ship in the arena</span>
       </button>
     </div>
+  </div>
+
+  <!-- Teams join popup — shown during 60s countdown -->
+  <div id="teams-join-popup" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+    <div style="font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);letter-spacing:3px;text-align:center;margin-bottom:4px;">⚔ TEAMS MATCH STARTING</div>
+    <div id="teams-join-countdown" style="font-family:'Orbitron',monospace;font-size:36px;font-weight:900;color:white;text-align:center;"></div>
+    <div style="font-size:11px;color:var(--dim);letter-spacing:2px;text-align:center;margin-bottom:8px;">SELECT YOUR TEAM</div>
+    <div style="display:flex;gap:12px;">
+      <button id="btn-join-red" onclick="joinTeam('red')"
+        style="background:rgba(120,0,0,0.9);border:2px solid #ff4444;border-radius:4px;color:#ff4444;
+               font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:2px;
+               padding:14px 28px;cursor:pointer;transition:all 0.15s;">
+        ⚔ JOIN RED
+      </button>
+      <button id="btn-join-blue" onclick="joinTeam('blue')"
+        style="background:rgba(0,40,120,0.9);border:2px solid #4488ff;border-radius:4px;color:#4488ff;
+               font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:2px;
+               padding:14px 28px;cursor:pointer;transition:all 0.15s;">
+        ⚔ JOIN BLUE
+      </button>
+    </div>
+    <div id="teams-join-chosen" style="display:none;font-family:'Orbitron',monospace;font-size:13px;letter-spacing:2px;text-align:center;margin-top:8px;"></div>
   </div>
 
   <!-- Ship selector -->
@@ -990,6 +1025,7 @@ function handleMsg(msg) {
             borgActive = state.borgActive || false;
             borgHp     = state.borgHp    || 0;
             updateBossAlert();
+            updateTeamsState(state);
             log('Fleet OK: ' + Object.keys(state.fleet||{}).length + ' ships', 'ok');
         } catch(e) { log('Parse err: ' + e.message, 'err'); }
         return;
@@ -1061,6 +1097,7 @@ function handleMsg(msg) {
                 borgActive = state.borgActive || false;
                 borgHp     = state.borgHp    || 0;
                 updateBossAlert();
+                updateTeamsState(state);
                 updateUndeadableGate();
             } catch(e) { log('Parse err: ' + e.message, 'err'); }
         }
@@ -1602,8 +1639,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload'], tractor:['btn-tractor','btn-boss-tractor'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload'], tractor:['cd-tractor','cd-boss-tractor'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload'], tractor:['btn-tractor','btn-boss-tractor'], healteam:['btn-healteam'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload'], tractor:['cd-tractor','cd-boss-tractor'], healteam:['cd-healteam'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -2039,6 +2076,134 @@ setInterval(() => {
 
 // State pushed via WebsocketBroadcastString from DSR Store State action
 
+
+
+// ── Teams mode companion state ─────────────────────────────────────────────
+let companionTeamsActive    = false;
+let companionTeamsJoinPhase = false;
+let myTeam                  = null;
+let _teamsJoinPopupTimer    = null;
+
+function updateTeamsState(state) {
+    const wasJoinPhase = companionTeamsJoinPhase;
+    companionTeamsActive    = state.teamsActive    || false;
+    companionTeamsJoinPhase = state.teamsJoinPhase || false;
+
+    if (myName && state.teamAssignments) {
+        myTeam = state.teamAssignments[myName.toLowerCase()] || myTeam || null;
+    }
+
+    if (companionTeamsJoinPhase && !wasJoinPhase) showTeamsJoinPopup();
+    else if (!companionTeamsJoinPhase && wasJoinPhase) hideTeamsJoinPopup();
+
+    updateHealTeamButton(state);
+
+    if (myTeam && state.teamsActive) {
+        const cdKey   = myTeam === 'red' ? 'healteamCooldownRed' : 'healteamCooldownBlue';
+        const lastUsed = state[cdKey] || 0;
+        if (lastUsed > 0) {
+            const expires = lastUsed + 180000;
+            if (expires > Date.now() && !isOnCooldown('healteam')) {
+                cooldowns['healteam'] = expires;
+                tickCooldown('healteam');
+            }
+        }
+    }
+}
+
+function showTeamsJoinPopup() {
+    if (!myName) return;
+    const popup = document.getElementById('teams-join-popup');
+    popup.style.display = 'flex';
+    let cd = 60;
+    document.getElementById('teams-join-countdown').innerText = cd;
+    if (myTeam) { showTeamChosen(myTeam); return; }
+    // Reset buttons
+    document.getElementById('btn-join-red').style.display  = 'block';
+    document.getElementById('btn-join-blue').style.display = 'block';
+    document.getElementById('teams-join-chosen').style.display = 'none';
+    _teamsJoinPopupTimer = setInterval(function() {
+        cd--;
+        var el = document.getElementById('teams-join-countdown');
+        if (el) el.innerText = cd;
+        if (cd <= 0) hideTeamsJoinPopup();
+    }, 1000);
+}
+
+function hideTeamsJoinPopup() {
+    if (_teamsJoinPopupTimer) { clearInterval(_teamsJoinPopupTimer); _teamsJoinPopupTimer = null; }
+    var popup = document.getElementById('teams-join-popup');
+    if (popup) popup.style.display = 'none';
+    // Reset for next time
+    if (!myTeam) {
+        var r = document.getElementById('btn-join-red');
+        var b = document.getElementById('btn-join-blue');
+        var c = document.getElementById('teams-join-chosen');
+        if (r) r.style.display = 'block';
+        if (b) b.style.display = 'block';
+        if (c) c.style.display = 'none';
+    }
+}
+
+function showTeamChosen(team) {
+    document.getElementById('btn-join-red').style.display  = 'none';
+    document.getElementById('btn-join-blue').style.display = 'none';
+    var chosen = document.getElementById('teams-join-chosen');
+    chosen.style.display = 'block';
+    chosen.style.color   = team === 'red' ? '#ff4444' : '#4488ff';
+    chosen.innerText     = team === 'red' ? '     JOINED RED TEAM!' : '     JOINED BLUE TEAM!';
+}
+
+function joinTeam(team) {
+    if (!myName) { log('Login with Twitch first!', 'err'); return; }
+    if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected!', 'err'); return; }
+    myTeam = team;
+    var action = team === 'red' ? 'DSR Join Red' : 'DSR Join Blue';
+    ws.send(JSON.stringify({
+        request: 'DoAction', id: 'companion-join',
+        action: { name: action },
+        args: { userName: myName }
+    }));
+    showTeamChosen(team);
+    log('Joined ' + team.toUpperCase() + ' team', 'ok');
+}
+
+function updateHealTeamButton(state) {
+    var btn      = document.getElementById('btn-healteam');
+    var fleetBtn = document.getElementById('btn-fleet');
+    var respawnBtn = document.getElementById('btn-respawn');
+    if (!btn) return;
+    if (state.teamsActive && myTeam) {
+        btn.style.display = 'block';
+        btn.classList.remove('team-red', 'team-blue');
+        btn.classList.add(myTeam === 'red' ? 'team-red' : 'team-blue');
+        var label = document.getElementById('btn-healteam-label');
+        if (label) label.style.color = myTeam === 'red' ? '#ff4444' : '#4488ff';
+        if (fleetBtn)   fleetBtn.style.display     = 'none';
+        if (respawnBtn) respawnBtn.style.gridColumn = 'span 1';
+    } else {
+        btn.style.display = 'none';
+        if (!state.teamsActive && !companionTeamsActive) {
+            if (fleetBtn && !borgActive) fleetBtn.style.display = 'none';
+            if (respawnBtn && !borgActive) respawnBtn.style.gridColumn = 'span 2';
+        }
+        if (!state.teamsActive) myTeam = null;
+    }
+}
+
+function useHealTeam() {
+    if (!myName) { log('Login with Twitch first!', 'err'); return; }
+    if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected!', 'err'); return; }
+    if (isOnCooldown('healteam')) return;
+    ws.send(JSON.stringify({
+        request: 'DoAction', id: 'companion-healteam',
+        action: { name: 'DSR Heal Team' },
+        args: { userName: myName }
+    }));
+    cooldowns['healteam'] = Date.now() + 180000;
+    tickCooldown('healteam');
+    log('RALLY TEAM activated!', 'ok');
+}
 
 
 // ── Start ──────────────────────────────────────────────────────────────────

@@ -695,6 +695,28 @@ header p {
     </div>
   </div>
 
+<!-- Teams join panel — shown during 60s countdown, same pattern as boss alert -->
+  <div id="teams-join-popup" style="display:none;background:rgba(0,0,0,0.95);border:2px solid var(--cyan);border-radius:4px;padding:14px;margin-bottom:12px;text-align:center;">
+    <div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--cyan);letter-spacing:3px;margin-bottom:6px;">⚔ TEAMS MATCH STARTING</div>
+    <div id="teams-join-countdown" style="font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:white;margin-bottom:10px;"></div>
+    <div style="font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:12px;">SELECT YOUR TEAM</div>
+    <div style="display:flex;gap:10px;justify-content:center;" id="teams-join-buttons">
+      <button id="btn-join-red" onclick="joinTeam('red')"
+        style="background:rgba(120,0,0,0.9);border:2px solid #ff4444;border-radius:4px;color:#ff4444;
+               font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;
+               padding:10px 20px;cursor:pointer;transition:all 0.15s;">
+        ⚔ JOIN RED
+      </button>
+      <button id="btn-join-blue" onclick="joinTeam('blue')"
+        style="background:rgba(0,40,120,0.9);border:2px solid #4488ff;border-radius:4px;color:#4488ff;
+               font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;
+               padding:10px 20px;cursor:pointer;transition:all 0.15s;">
+        ⚔ JOIN BLUE
+      </button>
+    </div>
+    <div id="teams-join-chosen" style="display:none;font-family:'Orbitron',monospace;font-size:12px;letter-spacing:2px;margin-top:10px;"></div>
+  </div>
+
   <div id="incoming-banner"></div>
   <!-- Targeted abilities -->
   <div class="panel">
@@ -807,27 +829,6 @@ header p {
     </div>
   </div>
 
-  <!-- Teams join popup — shown during 60s countdown -->
-  <div id="teams-join-popup" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
-    <div style="font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);letter-spacing:3px;text-align:center;margin-bottom:4px;">⚔ TEAMS MATCH STARTING</div>
-    <div id="teams-join-countdown" style="font-family:'Orbitron',monospace;font-size:36px;font-weight:900;color:white;text-align:center;"></div>
-    <div style="font-size:11px;color:var(--dim);letter-spacing:2px;text-align:center;margin-bottom:8px;">SELECT YOUR TEAM</div>
-    <div style="display:flex;gap:12px;">
-      <button id="btn-join-red" onclick="joinTeam('red')"
-        style="background:rgba(120,0,0,0.9);border:2px solid #ff4444;border-radius:4px;color:#ff4444;
-               font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:2px;
-               padding:14px 28px;cursor:pointer;transition:all 0.15s;">
-        ⚔ JOIN RED
-      </button>
-      <button id="btn-join-blue" onclick="joinTeam('blue')"
-        style="background:rgba(0,40,120,0.9);border:2px solid #4488ff;border-radius:4px;color:#4488ff;
-               font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:2px;
-               padding:14px 28px;cursor:pointer;transition:all 0.15s;">
-        ⚔ JOIN BLUE
-      </button>
-    </div>
-    <div id="teams-join-chosen" style="display:none;font-family:'Orbitron',monospace;font-size:13px;letter-spacing:2px;text-align:center;margin-top:8px;"></div>
-  </div>
 
   <!-- Ship selector -->
   <!-- Vessel modal -->
@@ -2134,16 +2135,17 @@ function updateTeamsState(state) {
 }
 
 function showTeamsJoinPopup() {
-    if (!myName) return;
     const popup = document.getElementById('teams-join-popup');
-    popup.style.display = 'flex';
+    if (!popup) return;
+    popup.style.display = 'block';
     let cd = 60;
     document.getElementById('teams-join-countdown').innerText = cd;
     if (myTeam) { showTeamChosen(myTeam); return; }
     // Reset buttons
-    document.getElementById('btn-join-red').style.display  = 'block';
-    document.getElementById('btn-join-blue').style.display = 'block';
+    document.getElementById('btn-join-red').style.display  = 'inline-block';
+    document.getElementById('btn-join-blue').style.display = 'inline-block';
     document.getElementById('teams-join-chosen').style.display = 'none';
+    if (_teamsJoinPopupTimer) clearInterval(_teamsJoinPopupTimer);
     _teamsJoinPopupTimer = setInterval(function() {
         cd--;
         var el = document.getElementById('teams-join-countdown');
@@ -2156,13 +2158,12 @@ function hideTeamsJoinPopup() {
     if (_teamsJoinPopupTimer) { clearInterval(_teamsJoinPopupTimer); _teamsJoinPopupTimer = null; }
     var popup = document.getElementById('teams-join-popup');
     if (popup) popup.style.display = 'none';
-    // Reset for next time
     if (!myTeam) {
         var r = document.getElementById('btn-join-red');
         var b = document.getElementById('btn-join-blue');
         var c = document.getElementById('teams-join-chosen');
-        if (r) r.style.display = 'block';
-        if (b) b.style.display = 'block';
+        if (r) r.style.display = 'inline-block';
+        if (b) b.style.display = 'inline-block';
         if (c) c.style.display = 'none';
     }
 }

@@ -1520,6 +1520,16 @@ function selectShipModal(el) {
         let avatarUrl = '';
         try { avatarUrl = JSON.parse(stored).profile_image_url || ''; } catch(_) {}
         if (!sendCommand('SHIP', `twitch_avatar:${avatarUrl}`)) return;
+    } else if (selectedShip === 'random') {
+        // Pick a specific ship locally so the swap is instant
+        const pool = ['california', 'chimera', 'bop', 'dorito', 'disco', 'destroyer', 'defiant', 'galaxy', 'dyson'];
+        const picked = pool[Math.floor(Math.random() * pool.length)];
+        selectedShip = picked;
+        // Update the active tile to reflect what was actually picked
+        document.querySelectorAll('.vessel-choice').forEach(e => e.classList.remove('active'));
+        const pickedTile = document.querySelector(`.vessel-choice[data-ship="${picked}"]`);
+        if (pickedTile) pickedTile.classList.add('active');
+        if (!sendCommand('SHIP', picked)) return;
     } else {
         if (!sendCommand('SHIP', selectedShip)) return;
     }

@@ -1017,6 +1017,25 @@ function connect() {
 }
 
 function handleMsg(msg) {
+    // Handle raw WebsocketBroadcastString from C# — DSR_CMD (same broadcast the overlay receives)
+    if (msg.type === 'DSR_CMD' && msg.payload) {
+        const raw = msg.payload.replace(/:uid:\d+$/, '');
+        const parts = raw.split(':');
+        const cmdType = parts[0].toUpperCase();
+        if (cmdType === 'TEAMS' && parts[2] && parts[3]) {
+            // Show join popup immediately without waiting for state broadcast
+            companionTeamsJoinPhase = true;
+            showTeamsJoinPopup();
+        } else if (cmdType === 'ENDTEAMS') {
+            companionTeamsJoinPhase = false;
+            companionTeamsActive    = false;
+            myTeam = null;
+            hideTeamsJoinPopup();
+            updateHealTeamButton({ teamsActive: false });
+        }
+        return;
+    }
+
     // Handle raw WebsocketBroadcastString from C#
     if (msg.type === 'DSR_STATE' && msg.stateJson) {
         try {
@@ -1119,21 +1138,24 @@ function handleMsg(msg) {
 
 // Maps command type to exact Streamer.bot action name
 const ACTION_NAMES = {
-    'FIRE':   'concentrateFire',
-    'FAW':    'FAW',
-    'TORP':   'TorpSingleTarget',
-    'SPREAD': 'spreadTorpedo',
-    'HEAL':   'Heal_DSR',
-    'CLOAK':  'CloakDSR',
-    'RAM':    'Ram DSR',
-    'SHIP':   'DSR Ship',
-    'BORG':   'DSR Spawn Borg',
-    'WARP':   'DSR Warp',
-    'SCATTER': 'DSR Scatter',
-    'FLEET':   'DSR Fleet',
-    'OVERLOAD':'DSR Overload',
-    'TRACTOR': 'DSR Tractor',
-    'PETS':   'DSR Pets',
+    'FIRE':     'concentrateFire',
+    'FAW':      'FAW',
+    'TORP':     'TorpSingleTarget',
+    'SPREAD':   'spreadTorpedo',
+    'HEAL':     'Heal_DSR',
+    'CLOAK':    'CloakDSR',
+    'RAM':      'Ram DSR',
+    'SHIP':     'DSR Ship',
+    'BORG':     'DSR Spawn Borg',
+    'WARP':     'DSR Warp',
+    'SCATTER':  'DSR Scatter',
+    'FLEET':    'DSR Fleet',
+    'OVERLOAD': 'DSR Overload',
+    'TRACTOR':  'DSR Tractor',
+    'PETS':     'DSR Pets',
+    'JOINRED':  'DSR Join Red',
+    'JOINBLUE': 'DSR Join Blue',
+    'HEALTEAM': 'DSR Heal Team',
 };
 
 function sendCommand(commandType, input0) {
@@ -2156,14 +2178,8 @@ function showTeamChosen(team) {
 
 function joinTeam(team) {
     if (!myName) { log('Login with Twitch first!', 'err'); return; }
-    if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected!', 'err'); return; }
     myTeam = team;
-    var action = team === 'red' ? 'DSR Join Red' : 'DSR Join Blue';
-    ws.send(JSON.stringify({
-        request: 'DoAction', id: 'companion-join',
-        action: { name: action },
-        args: { userName: myName }
-    }));
+    sendCommand(team === 'red' ? 'JOINRED' : 'JOINBLUE');
     showTeamChosen(team);
     log('Joined ' + team.toUpperCase() + ' team', 'ok');
 }
@@ -2192,14 +2208,8 @@ function updateHealTeamButton(state) {
 }
 
 function useHealTeam() {
-    if (!myName) { log('Login with Twitch first!', 'err'); return; }
-    if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected!', 'err'); return; }
     if (isOnCooldown('healteam')) return;
-    ws.send(JSON.stringify({
-        request: 'DoAction', id: 'companion-healteam',
-        action: { name: 'DSR Heal Team' },
-        args: { userName: myName }
-    }));
+    if (!sendCommand('HEALTEAM')) return;
     cooldowns['healteam'] = Date.now() + 180000;
     tickCooldown('healteam');
     log('RALLY TEAM activated!', 'ok');

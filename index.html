@@ -799,6 +799,21 @@ header p {
   <div id="vessel-modal" onclick="closeVesselModal(event)">
     <div class="vessel-modal-inner">
       <div class="vessel-modal-title">▸ SELECT YOUR VESSEL</div>
+
+      <!-- Twitch profile pic option — full width row at top -->
+      <div id="vessel-twitch-avatar" class="vessel-choice" data-ship="twitch_avatar" onclick="selectShipModal(this)"
+           style="grid-column:1/-1;display:flex;flex-direction:row;align-items:center;gap:12px;padding:10px 14px;margin-bottom:8px;border-color:#9146ff;justify-content:flex-start;">
+        <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;border:3px solid #9146ff;box-shadow:0 0 12px #9146ff88;flex-shrink:0;">
+          <img id="modal-twitch-avatar-img" src="" alt="Twitch Avatar"
+               style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <span class="vessel-label" style="color:#9146ff;font-size:9px;letter-spacing:2px;">TWITCH PROFILE</span>
+          <span id="modal-twitch-avatar-name" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text);">— login to unlock —</span>
+        </div>
+        <div id="modal-twitch-avatar-locked" style="margin-left:auto;font-size:11px;color:var(--dim);">🔒</div>
+      </div>
+
       <div class="vessel-grid">
         <div class="vessel-choice" data-ship="california" onclick="selectShipModal(this)">
           <div class="vessel-svg-wrap" id="svgwrap-california"></div>
@@ -1461,6 +1476,30 @@ function updateUndeadableGate() {
 }
 
 function openVesselModal() {
+    // Populate Twitch avatar tile based on login state
+    const twitchTile   = document.getElementById('vessel-twitch-avatar');
+    const avatarImg    = document.getElementById('modal-twitch-avatar-img');
+    const avatarName   = document.getElementById('modal-twitch-avatar-name');
+    const avatarLocked = document.getElementById('modal-twitch-avatar-locked');
+    const stored = sessionStorage.getItem('twitch_user');
+    if (stored) {
+        try {
+            const user = JSON.parse(stored);
+            avatarImg.src      = user.profile_image_url || '';
+            avatarName.innerText = user.display_name || myName;
+            avatarLocked.style.display = 'none';
+            twitchTile.classList.remove('locked');
+            twitchTile.style.opacity = '1';
+            twitchTile.style.cursor  = 'pointer';
+        } catch(_) {}
+    } else {
+        avatarImg.src      = '';
+        avatarName.innerText = '— login to unlock —';
+        avatarLocked.style.display = 'block';
+        twitchTile.classList.add('locked');
+        twitchTile.style.opacity = '0.45';
+        twitchTile.style.cursor  = 'not-allowed';
+    }
     document.getElementById('vessel-modal').classList.add('open');
 }
 
@@ -1474,7 +1513,17 @@ function selectShipModal(el) {
     document.querySelectorAll('.vessel-choice').forEach(e => e.classList.remove('active'));
     el.classList.add('active');
     selectedShip = el.dataset.ship;
-    if (!sendCommand('SHIP', selectedShip)) return;
+
+    // For twitch_avatar, append the profile image URL as a 4th colon-delimited segment
+    if (selectedShip === 'twitch_avatar') {
+        const stored = sessionStorage.getItem('twitch_user');
+        let avatarUrl = '';
+        try { avatarUrl = JSON.parse(stored).profile_image_url || ''; } catch(_) {}
+        if (!sendCommand('SHIP', `twitch_avatar:${avatarUrl}`)) return;
+    } else {
+        if (!sendCommand('SHIP', selectedShip)) return;
+    }
+
     log('Ship set to: ' + selectedShip, 'ok');
     updateCurrentVesselDisplay();
     setTimeout(() => document.getElementById('vessel-modal').classList.remove('open'), 400);
@@ -1484,6 +1533,16 @@ function updateCurrentVesselDisplay() {
     const COLOR = 'hsl(195,100%,65%)';
     const wrap = document.getElementById('vessel-current-svg');
     const label = document.getElementById('vessel-current-name');
+
+    if (selectedShip === 'twitch_avatar') {
+        const stored = sessionStorage.getItem('twitch_user');
+        let url = '', name = 'TWITCH AVATAR';
+        try { const u = JSON.parse(stored); url = u.profile_image_url || ''; name = u.display_name || name; } catch(_) {}
+        wrap.innerHTML = `<img src="${url}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #9146ff;box-shadow:0 0 8px #9146ff88;">`;
+        label.innerText = name.toUpperCase();
+        return;
+    }
+
     const svgMap = {
         california: getFederationSVG(COLOR),
         chimera:    getChimeraSVG(COLOR),

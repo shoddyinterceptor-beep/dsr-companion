@@ -1932,7 +1932,15 @@ function updateMasterTargetDropdown() {
     const prev = master.value;
     master.innerHTML = '<option value="">⚡ SYNC ALL TARGETS —</option>';
     Object.keys(fleet).sort()
-        .filter(name => name.toLowerCase() !== myName.toLowerCase())
+        .filter(name => {
+            if (name.toLowerCase() === myName.toLowerCase()) return false;
+            // During teams, only show opposing team players
+            if (companionTeamsActive && myTeam) {
+                const theirTeam = fleet[name] && fleet[name].team;
+                if (theirTeam && theirTeam === myTeam) return false;
+            }
+            return true;
+        })
         .forEach(name => {
             const opt = document.createElement('option');
             opt.value = name;

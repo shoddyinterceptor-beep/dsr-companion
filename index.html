@@ -2008,7 +2008,7 @@ function updateBossAlert() {
 // ── Twitch OAuth ──────────────────────────────────────────────────────────
 const TWITCH_CLIENT_ID   = 'yjnejxr98o87fzmsd09qk0xoqd0i0f';
 const TWITCH_REDIRECT    = 'https://shoddyinterceptor-beep.github.io/dsr-companion/';
-const TWITCH_SCOPE       = 'user:read:email chat:edit';
+const TWITCH_SCOPE       = 'user:read:email';
 
 function twitchLogin() {
     const state = Math.random().toString(36).substring(2);
@@ -2278,30 +2278,13 @@ function handleChatKey(e) {
 }
 
 function sendTwitchChat(message) {
-    const token = sessionStorage.getItem('twitch_token');
-    const user  = sessionStorage.getItem('twitch_user');
-    if (!token || !user) return;
-    let nick;
-    try { nick = JSON.parse(user).login || JSON.parse(user).display_name.toLowerCase(); } catch(e) { return; }
-    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv');
-    ws.onopen = () => {
-        ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
-        ws.send('PASS oauth:' + token);
-        ws.send('NICK ' + nick);
-        ws.send('JOIN #terranectomy');
-        // Send message 600ms after JOIN — Twitch IRC is reliably ready by then
-        setTimeout(() => {
-            if (ws.readyState === WebSocket.OPEN) {
-                ws.send('PRIVMSG #terranectomy :' + message);
-                setTimeout(() => ws.close(), 300);
-            }
-        }, 600);
-    };
-    ws.onmessage = (e) => {
-        if (e.data.startsWith('PING')) ws.send('PONG :tmi.twitch.tv');
-    };
-    ws.onerror = () => ws.close();
-    ws.onclose = () => {};
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({
+        request: 'DoAction',
+        id: 'companion-chat',
+        action: { name: 'DSR Chat Message' },
+        args: { userName: myName, message: message }
+    }));
 }
 </script>
 </body>

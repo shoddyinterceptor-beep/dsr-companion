@@ -2283,21 +2283,25 @@ function sendTwitchChat(message) {
     if (!token || !user) return;
     let nick;
     try { nick = JSON.parse(user).login || JSON.parse(user).display_name.toLowerCase(); } catch(e) { return; }
-    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv');
     ws.onopen = () => {
-        ws.send('CAP REQ :twitch.tv/commands');
+        ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
         ws.send('PASS oauth:' + token);
         ws.send('NICK ' + nick);
         ws.send('JOIN #terranectomy');
+        // Send message 600ms after JOIN — Twitch IRC is reliably ready by then
+        setTimeout(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send('PRIVMSG #terranectomy :' + message);
+                setTimeout(() => ws.close(), 300);
+            }
+        }, 600);
     };
     ws.onmessage = (e) => {
-        if (e.data.includes('End of /NAMES list') || e.data.includes('366')) {
-            ws.send('PRIVMSG #terranectomy :' + message);
-            setTimeout(() => ws.close(), 300);
-        }
         if (e.data.startsWith('PING')) ws.send('PONG :tmi.twitch.tv');
     };
     ws.onerror = () => ws.close();
+    ws.onclose = () => {};
 }
 </script>
 </body>

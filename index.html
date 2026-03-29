@@ -642,6 +642,12 @@ header p {
           </div>
           <button onclick="twitchLogout()" style="margin-left:auto;background:none;border:1px solid var(--dim);color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 6px;cursor:pointer;border-radius:3px">LOGOUT</button>
         </div>
+        <button onclick="openChatBox()" id="btn-chat" style="margin-top:8px;width:100%;background:none;border:1px solid var(--cyan);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;padding:5px;cursor:pointer;border-radius:3px;">💬 CHAT</button>
+        <textarea id="chat-input" placeholder="Type a message..." onkeydown="handleChatKey(event)"
+          style="display:none;margin-top:6px;width:100%;min-height:36px;max-height:160px;
+                 background:rgba(0,0,0,0.6);border:1px solid var(--cyan);color:white;
+                 font-family:'Share Tech Mono',monospace;font-size:11px;padding:6px;
+                 border-radius:3px;resize:none;overflow-y:hidden;box-sizing:border-box;"></textarea>
       </div>
     </div>
     <div class="panel" style="flex:1;min-width:0;">
@@ -2002,7 +2008,7 @@ function updateBossAlert() {
 // ── Twitch OAuth ──────────────────────────────────────────────────────────
 const TWITCH_CLIENT_ID   = 'yjnejxr98o87fzmsd09qk0xoqd0i0f';
 const TWITCH_REDIRECT    = 'https://shoddyinterceptor-beep.github.io/dsr-companion/';
-const TWITCH_SCOPE       = 'user:read:email';
+const TWITCH_SCOPE       = 'user:read:email chat:edit';
 
 function twitchLogin() {
     const state = Math.random().toString(36).substring(2);
@@ -2239,6 +2245,60 @@ handleOAuthCallback();
 initVesselSVGs(); // handle Twitch redirect if returning from login
 checkExistingSession(); // restore session if already logged in
 log('Login with Twitch, then paste the streamer connection URL', '');
+
+function openChatBox() {
+    const ta = document.getElementById('chat-input');
+    if (!ta) return;
+    ta.style.display = 'block';
+    ta.value = '';
+    ta.style.height = '36px';
+    ta.focus();
+}
+
+function closeChatBox() {
+    const ta = document.getElementById('chat-input');
+    if (ta) { ta.style.display = 'none'; ta.value = ''; }
+}
+
+function handleChatKey(e) {
+    const ta = e.target;
+    if (e.key === 'Escape') { e.preventDefault(); closeChatBox(); return; }
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const text = ta.value.trim();
+        if (text) sendTwitchChat(text);
+        closeChatBox();
+        return;
+    }
+    // Auto-grow textarea
+    setTimeout(() => {
+        ta.style.height = '36px';
+        ta.style.height = Math.min(160, ta.scrollHeight) + 'px';
+    }, 0);
+}
+
+function sendTwitchChat(message) {
+    const token = sessionStorage.getItem('twitch_token');
+    const user  = sessionStorage.getItem('twitch_user');
+    if (!token || !user) return;
+    let nick;
+    try { nick = JSON.parse(user).login || JSON.parse(user).display_name.toLowerCase(); } catch(e) { return; }
+    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+    ws.onopen = () => {
+        ws.send('CAP REQ :twitch.tv/commands');
+        ws.send('PASS oauth:' + token);
+        ws.send('NICK ' + nick);
+        ws.send('JOIN #terranectomy');
+    };
+    ws.onmessage = (e) => {
+        if (e.data.includes('End of /NAMES list') || e.data.includes('366')) {
+            ws.send('PRIVMSG #terranectomy :' + message);
+            setTimeout(() => ws.close(), 300);
+        }
+        if (e.data.startsWith('PING')) ws.send('PONG :tmi.twitch.tv');
+    };
+    ws.onerror = () => ws.close();
+}
 </script>
 </body>
 </html>

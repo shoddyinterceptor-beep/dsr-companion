@@ -465,8 +465,8 @@ header p {
 /* ── Boss action buttons ── */
 .boss-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-  gap: 4px;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 3px;
   margin-top: 10px;
 }
 .boss-btn {
@@ -475,17 +475,17 @@ header p {
   border-radius: 3px;
   color: var(--green);
   font-family: 'Orbitron', monospace;
-  font-size: 8px;
+  font-size: 6.5px;
   font-weight: 700;
-  letter-spacing: 1px;
-  padding: 8px 4px;
+  letter-spacing: 0.5px;
+  padding: 6px 2px;
   cursor: pointer;
   text-align: center;
   transition: all 0.15s;
 }
 .boss-btn:hover { background: var(--green); color: var(--bg); box-shadow: var(--glow-g); }
 .boss-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.boss-btn .bb-icon { font-size: 16px; display: block; margin-bottom: 3px; }
+.boss-btn .bb-icon { font-size: 13px; display: block; margin-bottom: 2px; }
 
 /* ── Boss alert ── */
 #boss-alert {
@@ -521,8 +521,8 @@ header p {
 /* Boss specific buttons */
 .boss-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-  gap: 4px;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 3px;
   margin-top: 10px;
 }
 .boss-btn {
@@ -531,9 +531,9 @@ header p {
   border-radius: 3px;
   color: var(--green);
   font-family: 'Orbitron', monospace;
-  font-size: 8px;
+  font-size: 6.5px;
   font-weight: 700;
-  padding: 8px 2px;
+  padding: 6px 2px;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -698,6 +698,10 @@ header p {
         <span class="bb-icon">🔵</span>TRACTOR
         <div class="cd-overlay" id="cd-boss-tractor" style="font-size:12px"></div>
       </button>
+      <button class="boss-btn" id="btn-boss-rapidfire" onclick="useBossAbility('rapidfire')" style="position:relative;overflow:hidden;border-color:#00eeff;color:#00eeff;">
+        <span class="bb-icon">⚡⚡</span>RAPIDFIRE
+        <div class="cd-overlay" id="cd-boss-rapidfire" style="font-size:12px"></div>
+      </button>
     </div>
   </div>
 
@@ -759,6 +763,13 @@ header p {
         <select id="overload-target"><option value="">— SELECT TARGET —</option></select>
       </div>
       <button class="fire-btn" id="btn-overload" onclick="useTargeted('overload')" style="border-color:#ff2222;color:#ff2222;position:relative;overflow:hidden">⚡ OVERLOAD<div class="cd-overlay" id="cd-overload" style="font-size:11px;color:#ff2222"></div></button>
+    </div>
+    <div class="target-row" id="row-rapidfire">
+      <div class="target-select-wrap">
+        <div class="target-hp-bar" id="hpbar-rapidfire"></div>
+        <select id="rapidfire-target"><option value="">— SELECT TARGET —</option></select>
+      </div>
+      <button class="fire-btn" id="btn-rapidfire" onclick="useTargeted('rapidfire')" style="border-color:#00eeff;color:#00eeff;position:relative;overflow:hidden">⚡⚡ RAPIDFIRE<div class="cd-overlay" id="cd-rapidfire" style="font-size:10px;color:#00eeff"></div></button>
     </div>
     <div class="target-row" id="row-tractor">
       <div class="target-select-wrap">
@@ -901,6 +912,10 @@ header p {
           <div class="vessel-svg-wrap" id="svgwrap-dyson"></div>
           <span class="vessel-label">DYSON DESTROYER</span>
         </div>
+        <div class="vessel-choice" data-ship="donnie" onclick="selectShipModal(this)">
+          <div class="vessel-svg-wrap" id="svgwrap-donnie"></div>
+          <span class="vessel-label">DONNIE</span>
+        </div>
         <div class="vessel-choice" data-ship="random" onclick="selectShipModal(this)" style="border-color:var(--gold);">
           <div class="vessel-svg-wrap" style="display:flex;align-items:center;justify-content:center;height:100%;"><svg viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg" style="width:64px;height:32px;">
   <!-- Left die — 4 dots -->
@@ -959,6 +974,7 @@ const COOLDOWNS_SECONDS = {
     fleet:   120,  // !fleet   — DSR Fleet action (global 2min)
     overload: 90,  // !overload
     tractor:  90,  // !tractor
+    rapidfire: 45, // !rapidfire
 };
 // ═══════════════════════════════════════════════════════════════════
 // Auto-converts seconds to milliseconds — do not edit below this line
@@ -1159,6 +1175,7 @@ const ACTION_NAMES = {
     'SCATTER':  'DSR Scatter',
     'FLEET':    'DSR Fleet',
     'OVERLOAD': 'DSR Overload',
+    'RAPIDFIRE': 'DSR Rapidfire',
     'TRACTOR':  'DSR Tractor',
     'PETS':     'DSR Pets',
     'JOINRED':  'DSR Join Red',
@@ -1510,6 +1527,58 @@ function getUndeadableSVG() {
     </svg>`;
 }
 
+function getDonnieSVG(color) {
+    color = color || 'hsl(195,100%,65%)';
+    const dim  = color.replace('65%','18%').replace('60%','18%');
+    const mid  = color.replace('65%','32%').replace('60%','32%');
+    const glow = color.replace('65%','72%').replace('60%','72%');
+    // NX-01 style: large circular saucer right, long tapered central hull, two parallel nacelles upper-left and lower-left with red bussard collectors
+    return `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:110px;height:110px;filter:drop-shadow(0 0 6px ${color})">
+        <!-- Upper nacelle -->
+        <rect x="4" y="12" width="42" height="9" rx="4" fill="${dim}" stroke="${color}" stroke-width="1.2"/>
+        <!-- Upper nacelle bussard collector (red) -->
+        <ellipse cx="46" cy="16" rx="6" ry="4" fill="#cc2200" stroke="#ff4400" stroke-width="1"/>
+        <ellipse cx="46" cy="16" rx="3" ry="2" fill="#ff6633" opacity="0.9"/>
+        <!-- Upper nacelle engine glow rear -->
+        <ellipse cx="6" cy="16" rx="3" ry="3.5" fill="${glow}" opacity="0.6"/>
+
+        <!-- Lower nacelle -->
+        <rect x="4" y="79" width="42" height="9" rx="4" fill="${dim}" stroke="${color}" stroke-width="1.2"/>
+        <!-- Lower nacelle bussard collector (red) -->
+        <ellipse cx="46" cy="83" rx="6" ry="4" fill="#cc2200" stroke="#ff4400" stroke-width="1"/>
+        <ellipse cx="46" cy="83" rx="3" ry="2" fill="#ff6633" opacity="0.9"/>
+        <!-- Lower nacelle engine glow rear -->
+        <ellipse cx="6" cy="83" rx="3" ry="3.5" fill="${glow}" opacity="0.6"/>
+
+        <!-- Nacelle pylons connecting to hull -->
+        <line x1="36" y1="21" x2="48" y2="38" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="36" y1="79" x2="48" y2="62" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Central hull — long tapered body -->
+        <path d="M22 44 L58 40 L100 50 L58 60 L22 56 Z"
+              fill="${mid}" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- Hull spine line -->
+        <line x1="30" y1="50" x2="96" y2="50" stroke="${color}" stroke-width="0.8" opacity="0.4"/>
+        <!-- Hull panel detail -->
+        <line x1="50" y1="42" x2="80" y2="44" stroke="${color}" stroke-width="0.7" opacity="0.35"/>
+        <line x1="50" y1="58" x2="80" y2="56" stroke="${color}" stroke-width="0.7" opacity="0.35"/>
+        <!-- Forward deflector dish -->
+        <ellipse cx="94" cy="50" rx="5" ry="4" fill="${glow}" stroke="${color}" stroke-width="1" opacity="0.85"/>
+        <circle cx="94" cy="50" r="2" fill="white" opacity="0.5"/>
+
+        <!-- Saucer section — large circle right side -->
+        <circle cx="22" cy="50" r="20" fill="${mid}" stroke="${color}" stroke-width="1.8"/>
+        <!-- Saucer inner ring detail -->
+        <circle cx="22" cy="50" r="14" fill="none" stroke="${color}" stroke-width="0.9" opacity="0.45"/>
+        <circle cx="22" cy="50" r="7"  fill="${glow}" stroke="${color}" stroke-width="1" opacity="0.7"/>
+        <!-- Saucer dome glint -->
+        <circle cx="17" cy="45" r="3" fill="white" opacity="0.3"/>
+        <!-- Saucer nav lights -->
+        <circle class="nav-red"   cx="22" cy="31" r="2.5" fill="#ff3333"/>
+        <circle class="nav-green" cx="22" cy="69" r="2.5" fill="#44ff44"/>
+    </svg>`;
+}
+
 // ── Vessel modal ──────────────────────────────────────────────────────────
 let selectedShip = 'undeadable';
 
@@ -1525,6 +1594,7 @@ function initVesselSVGs() {
     document.getElementById('svgwrap-galaxy').innerHTML     = getGalaxySVG(COLOR);
     document.getElementById('svgwrap-undeadable').innerHTML = getUndeadableSVG();
     document.getElementById('svgwrap-dyson').innerHTML      = getDysonSVG(COLOR);
+    document.getElementById('svgwrap-donnie').innerHTML     = getDonnieSVG(COLOR);
     // Set initial current vessel display
     updateCurrentVesselDisplay();
 }
@@ -1589,7 +1659,7 @@ function selectShipModal(el) {
         if (!sendCommand('SHIP', `twitch_avatar:${avatarUrl}`)) return;
     } else if (selectedShip === 'random') {
         // Pick a specific ship locally so the swap is instant
-        const pool = ['california', 'chimera', 'bop', 'dorito', 'disco', 'destroyer', 'defiant', 'galaxy', 'dyson'];
+        const pool = ['california', 'chimera', 'bop', 'dorito', 'disco', 'destroyer', 'defiant', 'galaxy', 'dyson', 'donnie'];
         const picked = pool[Math.floor(Math.random() * pool.length)];
         selectedShip = picked;
         // Update the active tile to reflect what was actually picked
@@ -1631,6 +1701,7 @@ function updateCurrentVesselDisplay() {
         galaxy:     getGalaxySVG(COLOR),
         undeadable: getUndeadableSVG(),
         dyson:      getDysonSVG(COLOR),
+        donnie:     getDonnieSVG(COLOR),
     };
     const nameMap = {
         california: 'USS CALIFORNIA',
@@ -1643,6 +1714,7 @@ function updateCurrentVesselDisplay() {
         galaxy:     'USS GALAXY',
         undeadable: 'USS UND34DABL3',
         dyson:      'DYSON DESTROYER',
+        donnie:     'DONNIE',
     };
     wrap.innerHTML  = svgMap[selectedShip]  || svgMap.random;
     label.innerText = nameMap[selectedShip] || 'SELECT YOUR VESSEL';
@@ -1669,8 +1741,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload'], tractor:['btn-tractor','btn-boss-tractor'], healteam:['btn-healteam'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload'], tractor:['cd-tractor','cd-boss-tractor'], healteam:['cd-healteam'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload'], rapidfire:['btn-rapidfire','btn-boss-rapidfire'], tractor:['btn-tractor','btn-boss-tractor'], healteam:['btn-healteam'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload'], rapidfire:['cd-rapidfire','cd-boss-rapidfire'], tractor:['cd-tractor','cd-boss-tractor'], healteam:['cd-healteam'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -1695,8 +1767,8 @@ function updateDeadState() {
     const alive = Object.keys(fleet).some(k => k.toLowerCase() === myName.toLowerCase());
     const combatBtns = [
         'btn-fire','btn-torp','btn-ram','btn-faw','btn-spread','btn-heal','btn-cloak',
-        'btn-warp','btn-pets','btn-scatter','btn-fleet','btn-overload','btn-tractor',
-        'btn-boss-fire','btn-boss-torp','btn-boss-ram','btn-boss-overload','btn-boss-tractor'
+        'btn-warp','btn-pets','btn-scatter','btn-fleet','btn-overload','btn-rapidfire','btn-tractor',
+        'btn-boss-fire','btn-boss-torp','btn-boss-ram','btn-boss-overload','btn-boss-rapidfire','btn-boss-tractor'
     ];
     combatBtns.forEach(id => {
         const b = document.getElementById(id);
@@ -1771,7 +1843,7 @@ function renderFleet() {
     }).join('');
 
     // Update target dropdowns
-    ['fire','torp','ram','overload','tractor'].forEach(key => {
+    ['fire','torp','ram','overload','rapidfire','tractor'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
         const cur = sel.value;
         sel.innerHTML = '<option value="">— SELECT TARGET —</option>' +
@@ -1852,9 +1924,9 @@ function updateTractorGreying() {
 }
 
 function updateCloakGreying() {
-    // Grey out !torp and !ram if selected target is cloaked
+    // Grey out targeted abilities if selected target is cloaked
     // UNLESS the viewer has an active !fire lock-on on that cloaked target
-    ['torp', 'ram'].forEach(key => {
+    ['torp', 'ram', 'overload', 'rapidfire', 'tractor'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
         const btn = document.getElementById(`btn-${key}`);
         if (!sel || !btn) return;
@@ -1906,8 +1978,8 @@ function updateCloakGreying() {
             healBtn.style.pointerEvents = '';
         }
     }
-    // Grey out fire/torp/ram if selected target is immune
-    ['fire','torp','ram','overload','tractor'].forEach(key => {
+    // Grey out fire/torp/ram/overload/rapidfire/tractor if selected target is immune
+    ['fire','torp','ram','overload','rapidfire','tractor'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
         const btn = document.getElementById(`btn-${key}`);
         if (!sel || !btn) return;
@@ -1924,7 +1996,7 @@ function updateCloakGreying() {
 }
 
 function syncMasterTarget(val) {
-    ['fire','torp','ram','overload','tractor'].forEach(key => {
+    ['fire','torp','ram','overload','rapidfire','tractor'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
         if (sel) sel.value = val;
     });
@@ -1957,7 +2029,7 @@ function updateMasterTargetDropdown() {
 }
 
 function updateTargetHPBars() {
-    ['fire','torp','ram','overload','tractor'].forEach(key => {
+    ['fire','torp','ram','overload','rapidfire','tractor'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
         if (!sel) return;
         const target = sel.value;

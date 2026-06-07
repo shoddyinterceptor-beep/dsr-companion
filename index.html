@@ -1961,7 +1961,7 @@ function updateCloakGreying() {
     const cloakBtn = document.getElementById('btn-cloak');
     if (cloakBtn && !isOnCooldown('cloak')) {
         const myEntry = getMyFleetEntry();
-        const cloakBlocked = myEntry && (myEntry.isTractored || myEntry.isCloaked);
+        const cloakBlocked = myEntry && myEntry.isTractored;
         cloakBtn.style.opacity = cloakBlocked ? '0.35' : '';
         cloakBtn.style.pointerEvents = cloakBlocked ? 'none' : '';
     }
@@ -1978,8 +1978,9 @@ function updateCloakGreying() {
             healBtn.style.pointerEvents = '';
         }
     }
-    // Grey out fire/torp/ram/overload/rapidfire/tractor if selected target is immune
-    ['fire','torp','ram','overload','rapidfire','tractor'].forEach(key => {
+    // Grey out torp/ram/overload/rapidfire/tractor if selected target is immune
+    // !fire excluded -- lock-on is never blocked by immunity (lock pierces cloak, immune state irrelevant)
+    ['torp','ram','overload','rapidfire','tractor'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
         const btn = document.getElementById(`btn-${key}`);
         if (!sel || !btn) return;

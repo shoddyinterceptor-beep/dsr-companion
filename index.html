@@ -2448,8 +2448,9 @@ function updateHealTeamButton(state) {
     } else {
         btn.style.display = 'none';
         if (!state.teamsActive && !companionTeamsActive) {
-            if (fleetBtn && !borgActive) fleetBtn.style.display = 'none';
-            if (respawnBtn && !borgActive) respawnBtn.style.gridColumn = 'span 2';
+            const anyBoss2 = borgActive || sphereActive;
+            if (fleetBtn && !anyBoss2) fleetBtn.style.display = 'none';
+            if (respawnBtn && !anyBoss2) respawnBtn.style.gridColumn = 'span 2';
         }
         if (!state.teamsActive) myTeam = null;
     }

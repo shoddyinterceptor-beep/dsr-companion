@@ -1101,11 +1101,11 @@ function handleMsg(msg) {
         try {
             const state = typeof msg.stateJson === 'string' ? JSON.parse(msg.stateJson) : msg.stateJson;
             if (state.fleet) { fleet = state.fleet; renderFleet(); }
-            borgActive = state.borgActive || false;
-            borgHp     = state.borgHp    || 0;
-            updateBossAlert();
+            borgActive   = state.borgActive   || false;
+            borgHp       = state.borgHp       || 0;
             sphereActive = state.sphereActive || false;
             sphereHp     = state.sphereHp     || 0;
+            updateBossAlert();
             updateSphereAlert();
             updateTeamsState(state);
             log('Fleet OK: ' + Object.keys(state.fleet||{}).length + ' ships', 'ok');
@@ -1147,9 +1147,9 @@ function handleMsg(msg) {
                     }
                 }
                 borgHp     = state.borgHp    || 0;
-                updateBossAlert();
                 sphereActive = state.sphereActive || false;
                 sphereHp     = state.sphereHp     || 0;
+                updateBossAlert();
                 updateSphereAlert();
                 updateTeamsState(state);
                 updateUndeadableGate();
@@ -1182,9 +1182,9 @@ function handleMsg(msg) {
                 }
                 borgActive = state.borgActive || false;
                 borgHp     = state.borgHp    || 0;
-                updateBossAlert();
                 sphereActive = state.sphereActive || false;
                 sphereHp     = state.sphereHp     || 0;
+                updateBossAlert();
                 updateSphereAlert();
                 updateTeamsState(state);
                 updateUndeadableGate();

@@ -664,7 +664,7 @@ header p {
     <div class="panel-title" style="margin-bottom:4px;">▸ YOUR VESSEL</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
       <div class="my-ship-name" id="my-ship-name" style="margin:0;min-width:90px;">—</div>
-      <div class="hp-bar-wrap" style="flex:1;margin:0;height:18px;border-radius:3px;"><div class="hp-bar-fill" id="my-hp-bar" style="width:100%"></div></div>
+      <div class="hp-bar-wrap" style="flex:1;margin:0;height:18px;border-radius:3px;position:relative;overflow:visible;"><div class="hp-bar-fill" id="my-hp-bar" style="width:100%;height:100%;border-radius:3px;"></div><div id="my-powerup-indicator" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:11px;font-family:'Orbitron',monospace;font-weight:700;color:#00ff41;text-shadow:0 0 6px #00ff41;white-space:nowrap;pointer-events:none;z-index:5;display:none;"></div></div>
       <span id="my-hp-text" style="font-size:10px;white-space:nowrap;color:var(--dim);">250 / 250 HP</span>
     </div>
     <div style="text-align:right;min-height:14px;">
@@ -1821,8 +1821,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire'], torp:['btn-torp','btn-boss-torp'], ram:['btn-ram','btn-boss-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload'], rapidfire:['btn-rapidfire','btn-boss-rapidfire'], tractor:['btn-tractor','btn-boss-tractor'], healteam:['btn-healteam'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire'], torp:['cd-torp','cd-boss-torp'], ram:['cd-ram','cd-boss-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload'], rapidfire:['cd-rapidfire','cd-boss-rapidfire'], tractor:['cd-tractor','cd-boss-tractor'], healteam:['cd-healteam'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire','btn-sphere-fire'], torp:['btn-torp','btn-boss-torp','btn-sphere-torp'], ram:['btn-ram','btn-boss-ram','btn-sphere-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload','btn-sphere-overload'], rapidfire:['btn-rapidfire','btn-boss-rapidfire','btn-sphere-rapidfire'], tractor:['btn-tractor','btn-boss-tractor','btn-sphere-tractor'], healteam:['btn-healteam'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire','cd-sphere-fire'], torp:['cd-torp','cd-boss-torp','cd-sphere-torp'], ram:['cd-ram','cd-boss-ram','cd-sphere-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload','cd-sphere-overload'], rapidfire:['cd-rapidfire','cd-boss-rapidfire','cd-sphere-rapidfire'], tractor:['cd-tractor','cd-boss-tractor','cd-sphere-tractor'], healteam:['cd-healteam'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -1848,7 +1848,8 @@ function updateDeadState() {
     const combatBtns = [
         'btn-fire','btn-torp','btn-ram','btn-faw','btn-spread','btn-heal','btn-cloak',
         'btn-warp','btn-pets','btn-scatter','btn-fleet','btn-overload','btn-rapidfire','btn-tractor',
-        'btn-boss-fire','btn-boss-torp','btn-boss-ram','btn-boss-overload','btn-boss-rapidfire','btn-boss-tractor'
+        'btn-boss-fire','btn-boss-torp','btn-boss-ram','btn-boss-overload','btn-boss-rapidfire','btn-boss-tractor',
+        'btn-sphere-fire','btn-sphere-torp','btn-sphere-ram','btn-sphere-overload','btn-sphere-rapidfire','btn-sphere-tractor'
     ];
     combatBtns.forEach(id => {
         const b = document.getElementById(id);
@@ -1943,6 +1944,7 @@ function renderFleet() {
     updateLockOnIndicator();
     updateIncomingTorp();
     updateTractorGreying();
+    updatePowerupGreying();
 }
 
 function getMyFleetEntry() {
@@ -2075,6 +2077,39 @@ function updateCloakGreying() {
     updateTargetHPBars();
 }
 
+function updatePowerupGreying() {
+    // Grey out abilities silently blocked by the player's active powerup.
+    // Matches POWERUP_BLOCKED in stream_avatars: ShieldMatrix->heal, PermanentPets->pets,
+    // Armada->cloak+warp, ColossalCollisions->ram. Hull Overdrive and Weapons Surge have no blocks.
+    const myEntry = getMyFleetEntry();
+    const blocked = (myEntry && myEntry.powerupBlockedAbilities) ? myEntry.powerupBlockedAbilities : [];
+
+    const abilityBtnIds = {
+        heal:  ['btn-heal'],
+        cloak: ['btn-cloak'],
+        warp:  ['btn-warp'],
+        pets:  ['btn-pets'],
+        ram:   ['btn-ram', 'btn-boss-ram', 'btn-sphere-ram']
+    };
+
+    Object.entries(abilityBtnIds).forEach(([ability, ids]) => {
+        const isBlocked = blocked.includes(ability);
+        ids.forEach(id => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            if (isBlocked && !isOnCooldown(ability)) {
+                btn.style.opacity = '0.35';
+                btn.style.pointerEvents = 'none';
+                btn.title = 'Blocked by active powerup';
+            } else if (!isBlocked && btn.title === 'Blocked by active powerup') {
+                btn.style.opacity = '';
+                btn.style.pointerEvents = '';
+                btn.title = '';
+            }
+        });
+    });
+}
+
 function syncMasterTarget(val) {
     ['fire','torp','ram','overload','rapidfire','tractor'].forEach(key => {
         const sel = document.getElementById(`${key}-target`);
@@ -2138,6 +2173,22 @@ function updateMyShip() {
     document.getElementById('my-hp-bar').style.background = col;
     document.getElementById('my-hp-text').innerText = `${Math.max(0,s.hp)} / ${s.maxHp} HP`;
     document.getElementById('my-streak').innerText = s.killStreak > 0 ? `🔥 ${s.killStreak} KILL STREAK` : '';
+
+    // Powerup indicator -- rendered dead-centre over the HP bar
+    const indicator = document.getElementById('my-powerup-indicator');
+    if (indicator) {
+        if (s.activePowerup && s.powerupMsRemaining > 0) {
+            const secLeft = Math.ceil(s.powerupMsRemaining / 1000);
+            const symbols = { HULL_OVERDRIVE:'➕', WEAPONS_SURGE:'⚡', SHIELD_MATRIX:'🛡', PERMANENT_PETS:'🐾', ARMADA:'⚓', COLOSSAL:'💥' };
+            const names   = { HULL_OVERDRIVE:'Hull Overdrive', WEAPONS_SURGE:'Weapons Surge', SHIELD_MATRIX:'Shield Matrix', PERMANENT_PETS:'Permanent Pets', ARMADA:'Armada', COLOSSAL:'Colossal' };
+            const sym  = symbols[s.activePowerup] || '⚡';
+            const name = names[s.activePowerup] || s.activePowerup;
+            indicator.innerText = sym + ' ' + name + ' ' + secLeft + 's';
+            indicator.style.display = 'block';
+        } else {
+            indicator.style.display = 'none';
+        }
+    }
 }
 
 function updateBossAlert() {
@@ -2171,8 +2222,9 @@ function updateSphereAlert() {
 
 function useSphereAbility(key) {
     if (isOnCooldown(key)) return;
-    const input0 = (key === 'ram') ? '' : myName;
-    if (!sendCommand(key.toUpperCase(), input0)) return;
+    // All sphere abilities use self-target (myName) -- overlay routes to sphere when sphereActive.
+    // This mirrors useBossAbility but targets sphere instead of Borg.
+    if (!sendCommand(key.toUpperCase(), myName)) return;
     startCooldown(key);
     log(key.toUpperCase() + ' -> POWER SPHERE', 'ok');
 }

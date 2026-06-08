@@ -1859,7 +1859,7 @@ function updateDeadState() {
             b.style.opacity = '0.2';
         } else {
             // Only re-enable if not on cooldown
-            const key = id.replace('btn-boss-','').replace('btn-','');
+            const key = id.replace('btn-boss-','').replace('btn-sphere-','').replace('btn-','');
             if (!isOnCooldown(key)) {
                 b.disabled = false;
                 b.style.opacity = '';
@@ -2101,7 +2101,7 @@ function updatePowerupGreying() {
                 btn.style.opacity = '0.35';
                 btn.style.pointerEvents = 'none';
                 btn.title = 'Blocked by active powerup';
-            } else if (!isBlocked && btn.title === 'Blocked by active powerup') {
+            } else if (!isBlocked && btn.title === 'Blocked by active powerup' && !isOnCooldown(ability)) {
                 btn.style.opacity = '';
                 btn.style.pointerEvents = '';
                 btn.title = '';
@@ -2194,13 +2194,12 @@ function updateMyShip() {
 function updateBossAlert() {
     const el = document.getElementById('boss-alert');
     el.style.display = borgActive ? 'block' : 'none';
-    // Show fleet row and hide normal respawn during boss, reverse on boss end
+    // Show fleet button during boss OR sphere -- hide during neither
     const fleetBtn   = document.getElementById('btn-fleet');
     const respawnBtn = document.getElementById('btn-respawn');
-    // Boss: PETS | FLEET | RESPAWN (each 1 col)
-    // Normal: PETS | RESPAWN (span 2)
-    if (fleetBtn)   fleetBtn.style.display        = borgActive ? 'block' : 'none';
-    if (respawnBtn) respawnBtn.style.gridColumn    = borgActive ? 'span 1' : 'span 2';
+    const anyBoss = borgActive || sphereActive;
+    if (fleetBtn)   fleetBtn.style.display        = anyBoss ? 'block' : 'none';
+    if (respawnBtn) respawnBtn.style.gridColumn    = anyBoss ? 'span 1' : 'span 2';
     if (!borgActive) return;
     const pct = Math.max(0, borgHp / 1000000 * 100);
     document.getElementById('boss-hp-bar').style.width = pct + '%';

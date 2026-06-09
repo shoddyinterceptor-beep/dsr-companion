@@ -709,7 +709,7 @@ header p {
   <div id="sphere-alert" style="display:none;background:rgba(0,20,0,0.95);border:2px solid #00ff41;border-radius:4px;padding:12px;text-align:center;margin-bottom:12px;animation:boss-pulse 1s ease-in-out infinite;">
     <div style="font-family:'Orbitron',monospace;font-size:13px;color:#00ff41;letter-spacing:2px;">⚡ POWER SPHERE ACTIVE</div>
     <div style="height:8px;background:#0a1a0a;border:1px solid #00ff41;border-radius:2px;overflow:hidden;margin:8px 0 4px;"><div id="sphere-hp-bar" style="height:100%;background:#00ff41;transition:width 0.5s;width:100%"></div></div>
-    <div id="sphere-hp-text" style="font-size:10px;color:#00ff41;">50,000 HP</div>
+    <div id="sphere-hp-text" style="font-size:10px;color:#00ff41;">10,000 HP</div>
     <div class="boss-actions" style="margin-top:10px;">
       <button class="boss-btn" id="btn-sphere-ram" onclick="useSphereAbility('ram')" style="position:relative;overflow:hidden;border-color:#00ff41;color:#00ff41;">
         <span class="bb-icon">⚡</span>RAM
@@ -2214,7 +2214,7 @@ function updateSphereAlert() {
     if (!el) return;
     el.style.display = sphereActive ? 'block' : 'none';
     if (!sphereActive) return;
-    const pct = Math.max(0, sphereHp / 50000 * 100);
+    const pct = Math.max(0, sphereHp / 10000 * 100);
     document.getElementById('sphere-hp-bar').style.width = pct + '%';
     document.getElementById('sphere-hp-text').innerText = sphereHp.toLocaleString() + ' HP';
 }

@@ -1935,8 +1935,15 @@ function updateDeadState() {
             b.disabled = true;
             b.style.opacity = '0.2';
         } else {
-            // Only re-enable if not on cooldown
-            const key = id.replace('btn-boss-','').replace('btn-sphere-','').replace('btn-','');
+            // Only re-enable if not on cooldown.
+            // btn-pu-* buttons all share the 'buypowerup' cooldown key -- map explicitly
+            // before the generic strip so 'btn-pu-hull' -> 'buypowerup' not 'pu-hull'.
+            let key;
+            if (id.startsWith('btn-pu-')) {
+                key = 'buypowerup';
+            } else {
+                key = id.replace('btn-boss-','').replace('btn-sphere-','').replace('btn-','');
+            }
             if (!isOnCooldown(key)) {
                 b.disabled = false;
                 b.style.opacity = '';

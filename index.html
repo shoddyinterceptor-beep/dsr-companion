@@ -879,6 +879,66 @@ header p {
     </div>
   </div>
 
+  <!-- Power Store -->
+  <div class="panel" id="power-store-panel">
+    <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>&#9658; POWER STORE</span>
+      <span id="power-store-status" style="font-size:10px;color:var(--gold);letter-spacing:1px;"></span>
+    </div>
+    <div style="font-size:9px;color:var(--dim);margin-bottom:8px;letter-spacing:1px;">1000 GPL &bull; 7 MIN COOLDOWN &bull; 2 MIN ACTIVE</div>
+    <div class="ability-grid">
+
+      <button class="ability-btn" id="btn-pu-hull" onclick="usePowerup('hull')"
+              style="border-color:#ff4466;--accent:#ff4466;position:relative;overflow:hidden;">
+        <span class="btn-icon">&#10133;</span>
+        <span class="btn-label">HULL OVERDRIVE</span>
+        <span class="btn-cd">750 HP &bull; kill-heal sustains</span>
+        <div class="cd-overlay" id="cd-pu-hull" style="font-size:12px;color:#ff4466;"></div>
+      </button>
+
+      <button class="ability-btn" id="btn-pu-dmg" onclick="usePowerup('dmg')"
+              style="border-color:#ffff44;--accent:#ffff44;position:relative;overflow:hidden;">
+        <span class="btn-icon">&#9889;</span>
+        <span class="btn-label">WEAPONS SURGE</span>
+        <span class="btn-cd">+50% dmg &bull; alias: damage</span>
+        <div class="cd-overlay" id="cd-pu-dmg" style="font-size:12px;color:#ffff44;"></div>
+      </button>
+
+      <button class="ability-btn" id="btn-pu-shield" onclick="usePowerup('shield')"
+              style="border-color:#44aaff;--accent:#44aaff;position:relative;overflow:hidden;">
+        <span class="btn-icon">&#11835;</span>
+        <span class="btn-label">SHIELD MATRIX</span>
+        <span class="btn-cd">450 shield &bull; 4 HP/s regen</span>
+        <div class="cd-overlay" id="cd-pu-shield" style="font-size:12px;color:#44aaff;"></div>
+      </button>
+
+      <button class="ability-btn safe" id="btn-pu-pets" onclick="usePowerup('pets')"
+              style="position:relative;overflow:hidden;">
+        <span class="btn-icon">&#128062;</span>
+        <span class="btn-label">PERMANENT PETS</span>
+        <span class="btn-cd">immortal escort &bull; alias: pp</span>
+        <div class="cd-overlay" id="cd-pu-pets" style="font-size:12px;color:var(--green);"></div>
+      </button>
+
+      <button class="ability-btn info" id="btn-pu-armada" onclick="usePowerup('armada')"
+              style="position:relative;overflow:hidden;">
+        <span class="btn-icon">&#9875;</span>
+        <span class="btn-label">ARMADA</span>
+        <span class="btn-cd">3 escorts &bull; alias: fleet/ships</span>
+        <div class="cd-overlay" id="cd-pu-armada" style="font-size:12px;color:var(--cyan);"></div>
+      </button>
+
+      <button class="ability-btn" id="btn-pu-crash" onclick="usePowerup('crash')"
+              style="border-color:#ff6600;--accent:#ff6600;position:relative;overflow:hidden;">
+        <span class="btn-icon">&#128165;</span>
+        <span class="btn-label">COLOSSAL</span>
+        <span class="btn-cd">collision immune &bull; alias: juggernaut</span>
+        <div class="cd-overlay" id="cd-pu-crash" style="font-size:12px;color:#ff6600;"></div>
+      </button>
+
+    </div>
+  </div>
+
 
   <!-- Ship selector -->
   <!-- Vessel modal -->
@@ -1012,6 +1072,7 @@ const COOLDOWNS_SECONDS = {
     overload: 90,  // !overload
     tractor:  90,  // !tractor
     rapidfire: 45, // !rapidfire
+    buypowerup: 420, // !buypowerup — DSR PowerUps action (7 minutes)
 };
 // ═══════════════════════════════════════════════════════════════════
 // Auto-converts seconds to milliseconds — do not edit below this line
@@ -1270,6 +1331,15 @@ function useAbility(key) {
     if (!sendCommand(key.toUpperCase(), input0)) return;
     startCooldown(key);
     log(`${key.toUpperCase()} activated`, 'ok');
+}
+
+function usePowerup(alias) {
+    if (!myName) { log('Login with Twitch first!', 'err'); return; }
+    if (isOnCooldown('buypowerup')) return;
+    if (!sendCommand('BUYPOWERUP', alias)) return;
+    startCooldown('buypowerup');
+    const names = { hull:'Hull Overdrive', dmg:'Weapons Surge', shield:'Shield Matrix', pets:'Permanent Pets', armada:'Armada', crash:'Colossal Collisions' };
+    log(`POWER STORE: ${names[alias] || alias} purchased — 1000 GPL`, 'ok');
 }
 
 function useBossAbility(key) {
@@ -1821,8 +1891,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire','btn-sphere-fire'], torp:['btn-torp','btn-boss-torp','btn-sphere-torp'], ram:['btn-ram','btn-boss-ram','btn-sphere-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload','btn-sphere-overload'], rapidfire:['btn-rapidfire','btn-boss-rapidfire','btn-sphere-rapidfire'], tractor:['btn-tractor','btn-boss-tractor','btn-sphere-tractor'], healteam:['btn-healteam'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire','cd-sphere-fire'], torp:['cd-torp','cd-boss-torp','cd-sphere-torp'], ram:['cd-ram','cd-boss-ram','cd-sphere-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload','cd-sphere-overload'], rapidfire:['cd-rapidfire','cd-boss-rapidfire','cd-sphere-rapidfire'], tractor:['cd-tractor','cd-boss-tractor','cd-sphere-tractor'], healteam:['cd-healteam'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire','btn-sphere-fire'], torp:['btn-torp','btn-boss-torp','btn-sphere-torp'], ram:['btn-ram','btn-boss-ram','btn-sphere-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload','btn-sphere-overload'], rapidfire:['btn-rapidfire','btn-boss-rapidfire','btn-sphere-rapidfire'], tractor:['btn-tractor','btn-boss-tractor','btn-sphere-tractor'], healteam:['btn-healteam'], buypowerup:['btn-pu-hull','btn-pu-dmg','btn-pu-shield','btn-pu-pets','btn-pu-armada','btn-pu-crash'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire','cd-sphere-fire'], torp:['cd-torp','cd-boss-torp','cd-sphere-torp'], ram:['cd-ram','cd-boss-ram','cd-sphere-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload','cd-sphere-overload'], rapidfire:['cd-rapidfire','cd-boss-rapidfire','cd-sphere-rapidfire'], tractor:['cd-tractor','cd-boss-tractor','cd-sphere-tractor'], healteam:['cd-healteam'], buypowerup:['cd-pu-hull','cd-pu-dmg','cd-pu-shield','cd-pu-pets','cd-pu-armada','cd-pu-crash'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -1849,7 +1919,8 @@ function updateDeadState() {
         'btn-fire','btn-torp','btn-ram','btn-faw','btn-spread','btn-heal','btn-cloak',
         'btn-warp','btn-pets','btn-scatter','btn-fleet','btn-overload','btn-rapidfire','btn-tractor',
         'btn-boss-fire','btn-boss-torp','btn-boss-ram','btn-boss-overload','btn-boss-rapidfire','btn-boss-tractor',
-        'btn-sphere-fire','btn-sphere-torp','btn-sphere-ram','btn-sphere-overload','btn-sphere-rapidfire','btn-sphere-tractor'
+        'btn-sphere-fire','btn-sphere-torp','btn-sphere-ram','btn-sphere-overload','btn-sphere-rapidfire','btn-sphere-tractor',
+        'btn-pu-hull','btn-pu-dmg','btn-pu-shield','btn-pu-pets','btn-pu-armada','btn-pu-crash'
     ];
     combatBtns.forEach(id => {
         const b = document.getElementById(id);
@@ -2175,7 +2246,8 @@ function updateMyShip() {
     document.getElementById('my-streak').innerText = s.killStreak > 0 ? `🔥 ${s.killStreak} KILL STREAK` : '';
 
     // Powerup indicator -- rendered dead-centre over the HP bar
-    const indicator = document.getElementById('my-powerup-indicator');
+    const indicator   = document.getElementById('my-powerup-indicator');
+    const storeStatus = document.getElementById('power-store-status');
     if (indicator) {
         if (s.activePowerup && s.powerupMsRemaining > 0) {
             const secLeft = Math.ceil(s.powerupMsRemaining / 1000);
@@ -2185,8 +2257,10 @@ function updateMyShip() {
             const name = names[s.activePowerup] || s.activePowerup;
             indicator.innerText = sym + ' ' + name + ' ' + secLeft + 's';
             indicator.style.display = 'block';
+            if (storeStatus) storeStatus.innerHTML = sym + ' <span style="color:var(--green)">' + name.toUpperCase() + ' ACTIVE ' + secLeft + 's</span>';
         } else {
             indicator.style.display = 'none';
+            if (storeStatus) storeStatus.innerHTML = '';
         }
     }
 }

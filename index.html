@@ -1335,8 +1335,14 @@ function useAbility(key) {
 
 function usePowerup(alias) {
     if (!myName) { log('Login with Twitch first!', 'err'); return; }
+    if (!ws || ws.readyState !== WebSocket.OPEN) { log('Not connected to stream!', 'err'); return; }
     if (isOnCooldown('buypowerup')) return;
-    if (!sendCommand('BUYPOWERUP', alias)) return;
+    ws.send(JSON.stringify({
+        request: 'DoAction',
+        id:      'companion-powerup',
+        action:  { name: 'DSR PowerUps' },
+        args:    { userName: myName, input0: alias, rawInput0: alias, input1: '', rawInput1: '' }
+    }));
     startCooldown('buypowerup');
     const names = { hull:'Hull Overdrive', dmg:'Weapons Surge', shield:'Shield Matrix', pets:'Permanent Pets', armada:'Armada', crash:'Colossal Collisions' };
     log(`POWER STORE: ${names[alias] || alias} purchased — 1000 GPL`, 'ok');

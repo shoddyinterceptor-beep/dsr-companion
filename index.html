@@ -886,37 +886,37 @@ header p {
       <span id="power-store-status" style="font-size:10px;color:var(--gold);letter-spacing:1px;"></span>
     </div>
     <div style="font-size:9px;color:var(--dim);margin-bottom:8px;letter-spacing:1px;">1000 GPL &bull; 7 MIN COOLDOWN &bull; 2 MIN ACTIVE</div>
-    <div class="ability-grid">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;">
 
       <button class="ability-btn" id="btn-pu-hull" onclick="usePowerup('hull')"
               style="border-color:#ff4466;--accent:#ff4466;position:relative;overflow:hidden;">
         <span class="btn-icon">&#10133;</span>
-        <span class="btn-label">HULL OVERDRIVE</span>
-        <span class="btn-cd">750 HP &bull; kill-heal sustains</span>
+        <span class="btn-label">HULL OD</span>
+        <span class="btn-cd">750 HP</span>
         <div class="cd-overlay" id="cd-pu-hull" style="font-size:12px;color:#ff4466;"></div>
       </button>
 
       <button class="ability-btn" id="btn-pu-dmg" onclick="usePowerup('dmg')"
               style="border-color:#ffff44;--accent:#ffff44;position:relative;overflow:hidden;">
         <span class="btn-icon">&#9889;</span>
-        <span class="btn-label">WEAPONS SURGE</span>
-        <span class="btn-cd">+50% dmg &bull; alias: damage</span>
+        <span class="btn-label">WPN SURGE</span>
+        <span class="btn-cd">+50% dmg</span>
         <div class="cd-overlay" id="cd-pu-dmg" style="font-size:12px;color:#ffff44;"></div>
       </button>
 
       <button class="ability-btn" id="btn-pu-shield" onclick="usePowerup('shield')"
               style="border-color:#44aaff;--accent:#44aaff;position:relative;overflow:hidden;">
         <span class="btn-icon">&#11835;</span>
-        <span class="btn-label">SHIELD MATRIX</span>
-        <span class="btn-cd">450 shield &bull; 4 HP/s regen</span>
+        <span class="btn-label">SHIELD MTX</span>
+        <span class="btn-cd">450 shield</span>
         <div class="cd-overlay" id="cd-pu-shield" style="font-size:12px;color:#44aaff;"></div>
       </button>
 
       <button class="ability-btn safe" id="btn-pu-pets" onclick="usePowerup('pets')"
               style="position:relative;overflow:hidden;">
         <span class="btn-icon">&#128062;</span>
-        <span class="btn-label">PERMANENT PETS</span>
-        <span class="btn-cd">immortal escort &bull; alias: pp</span>
+        <span class="btn-label">PERM PETS</span>
+        <span class="btn-cd">immortal escort</span>
         <div class="cd-overlay" id="cd-pu-pets" style="font-size:12px;color:var(--green);"></div>
       </button>
 
@@ -924,7 +924,7 @@ header p {
               style="position:relative;overflow:hidden;">
         <span class="btn-icon">&#9875;</span>
         <span class="btn-label">ARMADA</span>
-        <span class="btn-cd">3 escorts &bull; alias: fleet/ships</span>
+        <span class="btn-cd">3 escorts</span>
         <div class="cd-overlay" id="cd-pu-armada" style="font-size:12px;color:var(--cyan);"></div>
       </button>
 
@@ -932,8 +932,24 @@ header p {
               style="border-color:#ff6600;--accent:#ff6600;position:relative;overflow:hidden;">
         <span class="btn-icon">&#128165;</span>
         <span class="btn-label">COLOSSAL</span>
-        <span class="btn-cd">collision immune &bull; alias: juggernaut</span>
+        <span class="btn-cd">collision immune</span>
         <div class="cd-overlay" id="cd-pu-crash" style="font-size:12px;color:#ff6600;"></div>
+      </button>
+
+      <button class="ability-btn" id="btn-pu-decoy" onclick="usePowerup('decoy')"
+              style="border-color:#00ffcc;--accent:#00ffcc;position:relative;overflow:hidden;">
+        <span class="btn-icon">&#128123;</span>
+        <span class="btn-label">DECOY</span>
+        <span class="btn-cd">-45% dmg out</span>
+        <div class="cd-overlay" id="cd-pu-decoy" style="font-size:12px;color:#00ffcc;"></div>
+      </button>
+
+      <button class="ability-btn special" id="btn-pu-random" onclick="usePowerup('random')"
+              style="position:relative;overflow:hidden;">
+        <span class="btn-icon">&#127922;</span>
+        <span class="btn-label">RANDOM</span>
+        <span class="btn-cd">surprise!</span>
+        <div class="cd-overlay" id="cd-pu-random" style="font-size:12px;color:var(--gold);"></div>
       </button>
 
     </div>
@@ -1344,7 +1360,7 @@ function usePowerup(alias) {
         args:    { userName: myName, input0: alias, rawInput0: alias, input1: '', rawInput1: '' }
     }));
     startCooldown('buypowerup');
-    const names = { hull:'Hull Overdrive', dmg:'Weapons Surge', shield:'Shield Matrix', pets:'Permanent Pets', armada:'Armada', crash:'Colossal Collisions' };
+    const names = { hull:'Hull Overdrive', dmg:'Weapons Surge', shield:'Shield Matrix', pets:'Permanent Pets', armada:'Armada', crash:'Colossal Collisions', decoy:'Decoy', random:'Random' };
     log(`POWER STORE: ${names[alias] || alias} purchased — 1000 GPL`, 'ok');
 }
 
@@ -1897,8 +1913,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire','btn-sphere-fire'], torp:['btn-torp','btn-boss-torp','btn-sphere-torp'], ram:['btn-ram','btn-boss-ram','btn-sphere-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload','btn-sphere-overload'], rapidfire:['btn-rapidfire','btn-boss-rapidfire','btn-sphere-rapidfire'], tractor:['btn-tractor','btn-boss-tractor','btn-sphere-tractor'], healteam:['btn-healteam'], buypowerup:['btn-pu-hull','btn-pu-dmg','btn-pu-shield','btn-pu-pets','btn-pu-armada','btn-pu-crash'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire','cd-sphere-fire'], torp:['cd-torp','cd-boss-torp','cd-sphere-torp'], ram:['cd-ram','cd-boss-ram','cd-sphere-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload','cd-sphere-overload'], rapidfire:['cd-rapidfire','cd-boss-rapidfire','cd-sphere-rapidfire'], tractor:['cd-tractor','cd-boss-tractor','cd-sphere-tractor'], healteam:['cd-healteam'], buypowerup:['cd-pu-hull','cd-pu-dmg','cd-pu-shield','cd-pu-pets','cd-pu-armada','cd-pu-crash'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire','btn-sphere-fire'], torp:['btn-torp','btn-boss-torp','btn-sphere-torp'], ram:['btn-ram','btn-boss-ram','btn-sphere-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload','btn-sphere-overload'], rapidfire:['btn-rapidfire','btn-boss-rapidfire','btn-sphere-rapidfire'], tractor:['btn-tractor','btn-boss-tractor','btn-sphere-tractor'], healteam:['btn-healteam'], buypowerup:['btn-pu-hull','btn-pu-dmg','btn-pu-shield','btn-pu-pets','btn-pu-armada','btn-pu-crash','btn-pu-decoy','btn-pu-random'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire','cd-sphere-fire'], torp:['cd-torp','cd-boss-torp','cd-sphere-torp'], ram:['cd-ram','cd-boss-ram','cd-sphere-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload','cd-sphere-overload'], rapidfire:['cd-rapidfire','cd-boss-rapidfire','cd-sphere-rapidfire'], tractor:['cd-tractor','cd-boss-tractor','cd-sphere-tractor'], healteam:['cd-healteam'], buypowerup:['cd-pu-hull','cd-pu-dmg','cd-pu-shield','cd-pu-pets','cd-pu-armada','cd-pu-crash','cd-pu-decoy','cd-pu-random'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -1926,7 +1942,7 @@ function updateDeadState() {
         'btn-warp','btn-pets','btn-scatter','btn-fleet','btn-overload','btn-rapidfire','btn-tractor',
         'btn-boss-fire','btn-boss-torp','btn-boss-ram','btn-boss-overload','btn-boss-rapidfire','btn-boss-tractor',
         'btn-sphere-fire','btn-sphere-torp','btn-sphere-ram','btn-sphere-overload','btn-sphere-rapidfire','btn-sphere-tractor',
-        'btn-pu-hull','btn-pu-dmg','btn-pu-shield','btn-pu-pets','btn-pu-armada','btn-pu-crash'
+        'btn-pu-hull','btn-pu-dmg','btn-pu-shield','btn-pu-pets','btn-pu-armada','btn-pu-crash','btn-pu-decoy','btn-pu-random'
     ];
     combatBtns.forEach(id => {
         const b = document.getElementById(id);

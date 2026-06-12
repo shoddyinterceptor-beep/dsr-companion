@@ -932,7 +932,7 @@ header p {
               style="border-color:#ff6600;--accent:#ff6600;position:relative;overflow:hidden;">
         <span class="btn-icon">&#128165;</span>
         <span class="btn-label">COLOSSAL</span>
-        <span class="btn-cd">collision immune</span>
+        <span class="btn-cd">2.5x collision &bull; +35% resist &bull; AOE blocked</span>
         <div class="cd-overlay" id="cd-pu-crash" style="font-size:12px;color:#ff6600;"></div>
       </button>
 
@@ -2180,16 +2180,20 @@ function updateCloakGreying() {
 function updatePowerupGreying() {
     // Grey out abilities silently blocked by the player's active powerup.
     // Matches POWERUP_BLOCKED in stream_avatars: ShieldMatrix->heal, PermanentPets->pets,
-    // Armada->cloak+warp, ColossalCollisions->ram. Hull Overdrive and Weapons Surge have no blocks.
+    // Armada->cloak+warp, ColossalCollisions->ram+faw+scatter+spread.
+    // Hull Overdrive and Weapons Surge have no blocks.
     const myEntry = getMyFleetEntry();
     const blocked = (myEntry && myEntry.powerupBlockedAbilities) ? myEntry.powerupBlockedAbilities : [];
 
     const abilityBtnIds = {
-        heal:  ['btn-heal'],
-        cloak: ['btn-cloak'],
-        warp:  ['btn-warp'],
-        pets:  ['btn-pets'],
-        ram:   ['btn-ram', 'btn-boss-ram', 'btn-sphere-ram']
+        heal:    ['btn-heal'],
+        cloak:   ['btn-cloak'],
+        warp:    ['btn-warp'],
+        pets:    ['btn-pets'],
+        ram:     ['btn-ram', 'btn-boss-ram', 'btn-sphere-ram'],
+        faw:     ['btn-faw'],
+        scatter: ['btn-scatter'],
+        spread:  ['btn-spread']
     };
 
     Object.entries(abilityBtnIds).forEach(([ability, ids]) => {

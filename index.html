@@ -456,6 +456,67 @@ header p {
 }
 .vessel-close:hover { border-color: var(--cyan); color: var(--cyan); }
 
+/* ── Powerup modal (mirrors vessel modal structure) ── */
+#powerup-modal {
+  display: none;
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.85);
+  align-items: center; justify-content: center;
+}
+#powerup-modal.open { display: flex; }
+.powerup-modal-inner {
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  padding: 20px;
+  width: 90%; max-width: 380px;
+  box-shadow: 0 0 30px #ffdd0044;
+}
+.powerup-modal-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.powerup-modal-subtitle {
+  font-size: 9px; color: var(--dim); letter-spacing: 1px;
+  text-align: center; margin-bottom: 14px;
+}
+.powerup-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.powerup-choice {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 6px 6px;
+  cursor: pointer;
+  text-align: center;
+  font-family: 'Orbitron', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: var(--dim);
+  transition: all 0.15s;
+}
+.powerup-choice:hover { border-color: var(--gold); color: var(--gold); background: #1a1605; }
+.powerup-choice.disabled { opacity: 0.4; cursor: not-allowed; border-color: var(--dim); }
+.powerup-choice.disabled:hover { border-color: var(--dim); color: var(--dim); background: var(--bg); }
+.powerup-choice .btn-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+.powerup-choice .powerup-detail { display: block; font-size: 6px; color: var(--dim); margin-top: 3px; letter-spacing: 0; text-transform: none; }
+.powerup-close {
+  width: 100%; background: none; border: 1px solid var(--dim);
+  color: var(--dim); font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; padding: 8px; cursor: pointer; border-radius: 3px;
+}
+.powerup-close:hover { border-color: var(--gold); color: var(--gold); }
+
 /* ── Log ── */
 #log { font-size: 10px; line-height: 1.8; max-height: 80px; overflow-y: auto; }
 #log .entry { color: var(--dim); }
@@ -886,73 +947,14 @@ header p {
       <span id="power-store-status" style="font-size:10px;color:var(--gold);letter-spacing:1px;"></span>
     </div>
     <div style="font-size:9px;color:var(--dim);margin-bottom:8px;letter-spacing:1px;">1000 GPL &bull; 7 MIN COOLDOWN &bull; 2 MIN ACTIVE</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;">
 
-      <button class="ability-btn" id="btn-pu-hull" onclick="usePowerup('hull')"
-              style="border-color:#ff4466;--accent:#ff4466;position:relative;overflow:hidden;">
-        <span class="btn-icon">&#10133;</span>
-        <span class="btn-label">HULL OD</span>
-        <span class="btn-cd">750 HP</span>
-        <div class="cd-overlay" id="cd-pu-hull" style="font-size:12px;color:#ff4466;"></div>
-      </button>
-
-      <button class="ability-btn" id="btn-pu-dmg" onclick="usePowerup('dmg')"
-              style="border-color:#ffff44;--accent:#ffff44;position:relative;overflow:hidden;">
-        <span class="btn-icon">&#9889;</span>
-        <span class="btn-label">WPN SURGE</span>
-        <span class="btn-cd">+50% dmg</span>
-        <div class="cd-overlay" id="cd-pu-dmg" style="font-size:12px;color:#ffff44;"></div>
-      </button>
-
-      <button class="ability-btn" id="btn-pu-shield" onclick="usePowerup('shield')"
-              style="border-color:#44aaff;--accent:#44aaff;position:relative;overflow:hidden;">
-        <span class="btn-icon">&#11835;</span>
-        <span class="btn-label">SHIELD MTX</span>
-        <span class="btn-cd">450 shield</span>
-        <div class="cd-overlay" id="cd-pu-shield" style="font-size:12px;color:#44aaff;"></div>
-      </button>
-
-      <button class="ability-btn safe" id="btn-pu-pets" onclick="usePowerup('pets')"
-              style="position:relative;overflow:hidden;">
-        <span class="btn-icon">&#128062;</span>
-        <span class="btn-label">PERM PETS</span>
-        <span class="btn-cd">immortal escort</span>
-        <div class="cd-overlay" id="cd-pu-pets" style="font-size:12px;color:var(--green);"></div>
-      </button>
-
-      <button class="ability-btn info" id="btn-pu-armada" onclick="usePowerup('armada')"
-              style="position:relative;overflow:hidden;">
-        <span class="btn-icon">&#9875;</span>
-        <span class="btn-label">ARMADA</span>
-        <span class="btn-cd">3 escorts</span>
-        <div class="cd-overlay" id="cd-pu-armada" style="font-size:12px;color:var(--cyan);"></div>
-      </button>
-
-      <button class="ability-btn" id="btn-pu-crash" onclick="usePowerup('crash')"
-              style="border-color:#ff6600;--accent:#ff6600;position:relative;overflow:hidden;">
-        <span class="btn-icon">&#128165;</span>
-        <span class="btn-label">COLOSSAL</span>
-        <span class="btn-cd">2.5x collision &bull; +35% resist &bull; AOE blocked</span>
-        <div class="cd-overlay" id="cd-pu-crash" style="font-size:12px;color:#ff6600;"></div>
-      </button>
-
-      <button class="ability-btn" id="btn-pu-decoy" onclick="usePowerup('decoy')"
-              style="border-color:#00ffcc;--accent:#00ffcc;position:relative;overflow:hidden;">
-        <span class="btn-icon">&#128123;</span>
-        <span class="btn-label">DECOY</span>
-        <span class="btn-cd">-45% dmg out</span>
-        <div class="cd-overlay" id="cd-pu-decoy" style="font-size:12px;color:#00ffcc;"></div>
-      </button>
-
-      <button class="ability-btn special" id="btn-pu-random" onclick="usePowerup('random')"
-              style="position:relative;overflow:hidden;">
-        <span class="btn-icon">&#127922;</span>
-        <span class="btn-label">RANDOM</span>
-        <span class="btn-cd">surprise!</span>
-        <div class="cd-overlay" id="cd-pu-random" style="font-size:12px;color:var(--gold);"></div>
-      </button>
-
-    </div>
+    <button class="ability-btn special" id="btn-pu-modal" onclick="openPowerupModal()"
+            style="width:100%;position:relative;overflow:hidden;">
+      <span class="btn-icon">&#127922;</span>
+      <span class="btn-label">SELECT POWERUP</span>
+      <span class="btn-cd">9 available</span>
+      <div class="cd-overlay" id="cd-pu-modal" style="font-size:12px;color:var(--gold);"></div>
+    </button>
   </div>
 
 
@@ -1049,6 +1051,63 @@ header p {
         </div>
       </div>
       <button class="vessel-close" onclick="document.getElementById('vessel-modal').classList.remove('open')">CLOSE</button>
+    </div>
+  </div>
+
+  <!-- Powerup modal -->
+  <div id="powerup-modal" onclick="closePowerupModal(event)">
+    <div class="powerup-modal-inner">
+      <div class="powerup-modal-title">▸ SELECT POWERUP</div>
+      <div class="powerup-modal-subtitle">1000 GPL &bull; 7 MIN COOLDOWN &bull; 2 MIN ACTIVE</div>
+
+      <div class="powerup-grid">
+        <div class="powerup-choice" data-powerup="hull" onclick="selectPowerupModal(this)" style="border-color:#ff4466;">
+          <span class="btn-icon">&#10133;</span>
+          <span class="vessel-label" style="color:#ff4466;">HULL OD</span>
+          <span class="powerup-detail">750 HP</span>
+        </div>
+        <div class="powerup-choice" data-powerup="dmg" onclick="selectPowerupModal(this)" style="border-color:#ffff44;">
+          <span class="btn-icon">&#9889;</span>
+          <span class="vessel-label" style="color:#ffff44;">WPN SURGE</span>
+          <span class="powerup-detail">+50% dmg</span>
+        </div>
+        <div class="powerup-choice" data-powerup="shield" onclick="selectPowerupModal(this)" style="border-color:#44aaff;">
+          <span class="btn-icon">&#11835;</span>
+          <span class="vessel-label" style="color:#44aaff;">SHIELD MTX</span>
+          <span class="powerup-detail">450 shield</span>
+        </div>
+        <div class="powerup-choice" data-powerup="pets" onclick="selectPowerupModal(this)" style="border-color:var(--green);">
+          <span class="btn-icon">&#128062;</span>
+          <span class="vessel-label" style="color:var(--green);">PERM PETS</span>
+          <span class="powerup-detail">immortal escort</span>
+        </div>
+        <div class="powerup-choice" data-powerup="armada" onclick="selectPowerupModal(this)" style="border-color:var(--cyan);">
+          <span class="btn-icon">&#9875;</span>
+          <span class="vessel-label" style="color:var(--cyan);">ARMADA</span>
+          <span class="powerup-detail">3 escorts</span>
+        </div>
+        <div class="powerup-choice" data-powerup="crash" onclick="selectPowerupModal(this)" style="border-color:#ff6600;">
+          <span class="btn-icon">&#128165;</span>
+          <span class="vessel-label" style="color:#ff6600;">COLOSSAL</span>
+          <span class="powerup-detail">2.5x collision &bull; +35% resist &bull; AOE blocked</span>
+        </div>
+        <div class="powerup-choice" data-powerup="decoy" onclick="selectPowerupModal(this)" style="border-color:#00ffcc;">
+          <span class="btn-icon">&#128123;</span>
+          <span class="vessel-label" style="color:#00ffcc;">DECOY</span>
+          <span class="powerup-detail">-45% dmg out</span>
+        </div>
+        <div class="powerup-choice" data-powerup="feedback" onclick="selectPowerupModal(this)" style="border-color:#ff66ff;">
+          <span class="btn-icon">&#128260;</span>
+          <span class="vessel-label" style="color:#ff66ff;">FEEDBACK</span>
+          <span class="powerup-detail">absorb 95% &bull; reflect 105% &bull; -25% dmg out &bull; blocks heal/pets/warp/cloak</span>
+        </div>
+        <div class="powerup-choice" data-powerup="random" onclick="selectPowerupModal(this)" style="border-color:var(--gold);">
+          <span class="btn-icon">&#127922;</span>
+          <span class="vessel-label" style="color:var(--gold);">RANDOM</span>
+          <span class="powerup-detail">surprise!</span>
+        </div>
+      </div>
+      <button class="powerup-close" onclick="document.getElementById('powerup-modal').classList.remove('open')">CLOSE</button>
     </div>
   </div>
 
@@ -1360,7 +1419,7 @@ function usePowerup(alias) {
         args:    { userName: myName, input0: alias, rawInput0: alias, input1: '', rawInput1: '' }
     }));
     startCooldown('buypowerup');
-    const names = { hull:'Hull Overdrive', dmg:'Weapons Surge', shield:'Shield Matrix', pets:'Permanent Pets', armada:'Armada', crash:'Colossal Collisions', decoy:'Decoy', random:'Random' };
+    const names = { hull:'Hull Overdrive', dmg:'Weapons Surge', shield:'Shield Matrix', pets:'Permanent Pets', armada:'Armada', crash:'Colossal Collisions', decoy:'Decoy', feedback:'Feedback Pulse', random:'Random' };
     log(`POWER STORE: ${names[alias] || alias} purchased — 1000 GPL`, 'ok');
 }
 
@@ -1846,6 +1905,30 @@ function selectShipModal(el) {
     setTimeout(() => document.getElementById('vessel-modal').classList.remove('open'), 400);
 }
 
+function openPowerupModal() {
+    // The modal itself is gated by the buypowerup cooldown -- not just the
+    // individual choice tiles inside it. While on cooldown, opening the
+    // selector at all is blocked, matching how the old single-button grid
+    // already disabled all 8 buttons together via the shared 'buypowerup'
+    // cooldown key.
+    if (isOnCooldown('buypowerup')) {
+        log('Power Store on cooldown', 'err');
+        return;
+    }
+    document.getElementById('powerup-modal').classList.add('open');
+}
+
+function closePowerupModal(e) {
+    if (e.target === document.getElementById('powerup-modal'))
+        document.getElementById('powerup-modal').classList.remove('open');
+}
+
+function selectPowerupModal(el) {
+    const alias = el.dataset.powerup;
+    usePowerup(alias);
+    setTimeout(() => document.getElementById('powerup-modal').classList.remove('open'), 400);
+}
+
 function updateCurrentVesselDisplay() {
     const COLOR = 'hsl(195,100%,65%)';
     const wrap = document.getElementById('vessel-current-svg');
@@ -1913,8 +1996,8 @@ function startCooldown(key) {
 
 function tickCooldown(key) {
     const remaining = Math.ceil((cooldowns[key] - Date.now()) / 1000);
-    const btnMap = { fire:['btn-fire','btn-boss-fire','btn-sphere-fire'], torp:['btn-torp','btn-boss-torp','btn-sphere-torp'], ram:['btn-ram','btn-boss-ram','btn-sphere-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload','btn-sphere-overload'], rapidfire:['btn-rapidfire','btn-boss-rapidfire','btn-sphere-rapidfire'], tractor:['btn-tractor','btn-boss-tractor','btn-sphere-tractor'], healteam:['btn-healteam'], buypowerup:['btn-pu-hull','btn-pu-dmg','btn-pu-shield','btn-pu-pets','btn-pu-armada','btn-pu-crash','btn-pu-decoy','btn-pu-random'] };
-    const cdMap  = { fire:['cd-fire','cd-boss-fire','cd-sphere-fire'], torp:['cd-torp','cd-boss-torp','cd-sphere-torp'], ram:['cd-ram','cd-boss-ram','cd-sphere-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload','cd-sphere-overload'], rapidfire:['cd-rapidfire','cd-boss-rapidfire','cd-sphere-rapidfire'], tractor:['cd-tractor','cd-boss-tractor','cd-sphere-tractor'], healteam:['cd-healteam'], buypowerup:['cd-pu-hull','cd-pu-dmg','cd-pu-shield','cd-pu-pets','cd-pu-armada','cd-pu-crash','cd-pu-decoy','cd-pu-random'] };
+    const btnMap = { fire:['btn-fire','btn-boss-fire','btn-sphere-fire'], torp:['btn-torp','btn-boss-torp','btn-sphere-torp'], ram:['btn-ram','btn-boss-ram','btn-sphere-ram'], faw:['btn-faw'], spread:['btn-spread'], heal:['btn-heal'], cloak:['btn-cloak'], warp:['btn-warp'], pets:['btn-pets'], scatter:['btn-scatter'], fleet:['btn-fleet'], overload:['btn-overload','btn-boss-overload','btn-sphere-overload'], rapidfire:['btn-rapidfire','btn-boss-rapidfire','btn-sphere-rapidfire'], tractor:['btn-tractor','btn-boss-tractor','btn-sphere-tractor'], healteam:['btn-healteam'], buypowerup:['btn-pu-modal'] };
+    const cdMap  = { fire:['cd-fire','cd-boss-fire','cd-sphere-fire'], torp:['cd-torp','cd-boss-torp','cd-sphere-torp'], ram:['cd-ram','cd-boss-ram','cd-sphere-ram'], faw:['cd-faw'], spread:['cd-spread'], heal:['cd-heal'], cloak:['cd-cloak'], warp:['cd-warp'], pets:['cd-pets'], scatter:['cd-scatter'], fleet:['cd-fleet'], overload:['cd-overload','cd-boss-overload','cd-sphere-overload'], rapidfire:['cd-rapidfire','cd-boss-rapidfire','cd-sphere-rapidfire'], tractor:['cd-tractor','cd-boss-tractor','cd-sphere-tractor'], healteam:['cd-healteam'], buypowerup:['cd-pu-modal'] };
 
     if (remaining <= 0) {
         const ids = Array.isArray(btnMap[key]) ? btnMap[key] : [btnMap[key]];
@@ -1942,7 +2025,7 @@ function updateDeadState() {
         'btn-warp','btn-pets','btn-scatter','btn-fleet','btn-overload','btn-rapidfire','btn-tractor',
         'btn-boss-fire','btn-boss-torp','btn-boss-ram','btn-boss-overload','btn-boss-rapidfire','btn-boss-tractor',
         'btn-sphere-fire','btn-sphere-torp','btn-sphere-ram','btn-sphere-overload','btn-sphere-rapidfire','btn-sphere-tractor',
-        'btn-pu-hull','btn-pu-dmg','btn-pu-shield','btn-pu-pets','btn-pu-armada','btn-pu-crash','btn-pu-decoy','btn-pu-random'
+        'btn-pu-modal'
     ];
     combatBtns.forEach(id => {
         const b = document.getElementById(id);
@@ -1953,7 +2036,7 @@ function updateDeadState() {
         } else {
             // Only re-enable if not on cooldown.
             // btn-pu-* buttons all share the 'buypowerup' cooldown key -- map explicitly
-            // before the generic strip so 'btn-pu-hull' -> 'buypowerup' not 'pu-hull'.
+            // before the generic strip so 'btn-pu-modal' -> 'buypowerup' not 'pu-modal'.
             let key;
             if (id.startsWith('btn-pu-')) {
                 key = 'buypowerup';

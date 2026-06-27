@@ -1101,6 +1101,11 @@ header p {
           <span class="vessel-label" style="color:#ff66ff;">FEEDBACK</span>
           <span class="powerup-detail">absorb 75% &bull; reflect by type &bull; -75% dmg out</span>
         </div>
+        <div class="powerup-choice" data-powerup="anomaly" onclick="selectPowerupModal(this)" style="border-color:#aaff00;">
+          <span class="btn-icon">&#127775;</span>
+          <span class="vessel-label" style="color:#aaff00;">COSMIC RIFT</span>
+          <span class="powerup-detail">65hp/3s siphon &bull; 1.5x enemy resist &bull; 0.75x self resist</span>
+        </div>
         <div class="powerup-choice" data-powerup="random" onclick="selectPowerupModal(this)" style="border-color:var(--gold);">
           <span class="btn-icon">&#127922;</span>
           <span class="vessel-label" style="color:var(--gold);">RANDOM</span>
@@ -1419,7 +1424,7 @@ function usePowerup(alias) {
         args:    { userName: myName, input0: alias, rawInput0: alias, input1: '', rawInput1: '' }
     }));
     startCooldown('buypowerup');
-    const names = { hull:'Hull Overdrive', dmg:'Weapons Surge', shield:'Shield Matrix', pets:'Permanent Pets', armada:'Armada', crash:'Colossal Collisions', decoy:'Decoy', feedback:'Feedback Pulse', random:'Random' };
+    const names = { hull:'Hull Overdrive', dmg:'Weapons Surge', shield:'Shield Matrix', pets:'Permanent Pets', armada:'Armada', crash:'Colossal Collisions', decoy:'Decoy', feedback:'Feedback Pulse', anomaly:'Cosmic Rift', random:'Random' };
     log(`POWER STORE: ${names[alias] || alias} purchased — 1000 GPL`, 'ok');
 }
 
